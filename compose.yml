@@ -52,6 +52,7 @@ services:
     #     - http://127.0.0.1:3000/admin/healthz
     image: cockroachdb/cockroach:v25.1.1
     volumes:
+      - ./cockroachdb/certificates:/cockroach/certs
       - ./cockroachdb/data:/cockroach/cockroach-data
 
   # zitadel:
