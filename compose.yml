@@ -33,6 +33,7 @@ networks:
 services:
   cockroachdb:
     <<: *service
+    command: start-single-node --http-addr=cockroachdb:8080
     # deploy:
     #   resources:
     #     limits:
