@@ -12,6 +12,7 @@ x-templates:
       timeout: 3s
     mem_swappiness: 0
     networks:
+      - identity_provider
       - proxy_bridge
     restart: unless-stopped
     security_opt:
@@ -25,10 +26,49 @@ x-templates:
 name: identity-provider
 
 networks:
+  identity_provider:
   proxy_bridge:
     external: true
 
 services:
-  zitadel:
+  cockroachdb:
     <<: *service
+    # deploy:
+    #   resources:
+    #     limits:
+    #       memory: 128M
+    # environment:
+    #   COCKROACH_DATABASE:
+    #   COCKROACH_PASSWORD:
+    #   COCKROACH_USER:
+    # healthcheck:
+    #   <<: *service-healthcheck
+    #   test:
+    #     - CMD
+    #     - wget
+    #     - --spider
+    #     - -q
+    #     - http://127.0.0.1:3000/admin/healthz
+    image: cockroachdb/cockroach:v25.1.1
+    volumes:
+      - ./cockroachdb/data:/cockroach/cockroach-data
+
+  # zitadel:
+  #   <<: *service
+  #   # deploy:
+  #   #   resources:
+  #   #     limits:
+  #   #       memory: 128M
+  #   # healthcheck:
+  #   #   <<: *service-healthcheck
+  #   #   test:
+  #   #     - CMD
+  #   #     - wget
+  #   #     - --spider
+  #   #     - -q
+  #   #     - http://127.0.0.1:3000/admin/healthz
+  #   image: ghcr.io/zitadel/zitadel:v2.71.3
+  #   # labels:
+  #   #   - traefik.enable=true
+  #   #   - traefik.http.routers.zitadel.rule=Host("${HOSTNAME:?}")
 ...
