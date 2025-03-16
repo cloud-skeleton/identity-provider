@@ -1,0 +1,34 @@
+---
+# @TODO: Needs fully compatible and transparent podman-compose support
+x-podman:
+  in_pod: false
+
+x-templates:
+  service: &service
+    healthcheck: &service-healthcheck
+      interval: 10s
+      start_interval: 2s
+      start_period: 10s
+      timeout: 3s
+    mem_swappiness: 0
+    networks:
+      - proxy_bridge
+    restart: unless-stopped
+    security_opt:
+      - label:disable
+    userns_mode: keep-id:uid=0,gid=0
+
+  job: &job
+    <<: *service
+    restart: "no"
+
+name: identity-provider
+
+networks:
+  proxy_bridge:
+    external: true
+
+services:
+  zitadel:
+    <<: *service
+...
