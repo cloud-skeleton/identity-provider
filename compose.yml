@@ -33,11 +33,11 @@ networks:
 services:
   cockroachdb:
     <<: *service
-    command: start-single-node --http-addr=cockroachdb:8080
+    command: start-single-node --http-addr=0.0.0.0:8080 --cache=64MiB
     deploy:
       resources:
         limits:
-          memory: 128M
+          memory: 256M
     # environment:
     #   COCKROACH_DATABASE:
     #   COCKROACH_PASSWORD:
