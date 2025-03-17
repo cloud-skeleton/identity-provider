@@ -60,6 +60,8 @@ services:
       - traefik.http.middlewares.strip-db-prefix.stripprefix.prefixes=/db
       - traefik.http.routers.cockroachdb.middlewares=admin-ip-only@file,strip-db-prefix
       - traefik.http.routers.cockroachdb.rule=Host("${HOSTNAME:?}") && PathPrefix("/db")
+      - traefik.http.services.cockroachdb.loadbalancer.server.scheme=https
+      - traefik.http.services.cockroachdb.loadBalancer.serversTransport=self-signed@file
     volumes:
       - ./cockroachdb/certificates:/cockroach/certs
       - ./cockroachdb/data:/cockroach/cockroach-data
