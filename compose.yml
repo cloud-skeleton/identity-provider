@@ -35,8 +35,10 @@ services:
     <<: *service
     command: >
       start-single-node
-      --http-addr=0.0.0.0:8080
       --cache=64MiB
+      --http-addr=0.0.0.0:8080
+#      --listen-addr=localhost:26257
+#      --sql-addr=localhost:26256
     deploy:
       resources:
         limits:
@@ -45,14 +47,13 @@ services:
       COCKROACH_DATABASE: zitadel
       COCKROACH_PASSWORD: ${DATABASE_USER_PASSWORD:?}
       COCKROACH_USER: zitadel-user
-    # healthcheck:
-    #   <<: *service-healthcheck
-    #   test:
-    #     - CMD
-    #     - wget
-    #     - --spider
-    #     - -q
-    #     - http://127.0.0.1:3000/admin/healthz
+    healthcheck:
+      <<: *service-healthcheck
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:8080/health?ready=1
     image: cockroachdb/cockroach:v25.1.1
     labels:
       - traefik.enable=true
