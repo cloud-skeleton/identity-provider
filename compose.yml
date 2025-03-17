@@ -110,18 +110,16 @@ services:
     depends_on:
       postgresql:
         condition: service_healthy
-    # deploy:
-    #   resources:
-    #     limits:
-    #       memory: 128M
-    # healthcheck:
-    #   <<: *service-healthcheck
-    #   test:
-    #     - CMD
-    #     - wget
-    #     - --spider
-    #     - -q
-    #     - http://127.0.0.1:3000/admin/healthz
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+    healthcheck:
+      <<: *service-healthcheck
+      test:
+        - CMD
+        - zitadel
+        - ready
     image: ghcr.io/zitadel/zitadel:v2.71.3
     labels:
       - traefik.enable=true
