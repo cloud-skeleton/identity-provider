@@ -41,39 +41,6 @@ networks:
     external: true
 
 services:
-  # @TODO: Uncomment once we figure out a way to run it on 128MB of RAM
-  # cockroachdb:
-  #   <<: *service
-  #   command: >
-  #     start-single-node
-  #     --http-addr=0.0.0.0:8080
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 512M
-  #   environment:
-  #     COCKROACH_DATABASE: zitadel
-  #     COCKROACH_PASSWORD: ${DATABASE_USER_PASSWORD:?}
-  #     COCKROACH_USER: zitadel
-  #   healthcheck:
-  #     <<: *service-healthcheck
-  #     test:
-  #       - CMD
-  #       - curl
-  #       - -f
-  #       - http://localhost:8080/health?ready=1
-  #   image: cockroachdb/cockroach:v25.1.1
-  #   labels:
-  #     - traefik.enable=true
-  #     - traefik.http.middlewares.strip-db-prefix.stripprefix.prefixes=/db
-  #     - traefik.http.routers.cockroachdb.middlewares=admin-ip-only@file,strip-db-prefix
-  #     - traefik.http.routers.cockroachdb.rule=Host("${HOSTNAME:?}") && PathPrefix("/db")
-  #     - traefik.http.services.cockroachdb.loadbalancer.server.scheme=https
-  #     - traefik.http.services.cockroachdb.loadBalancer.serversTransport=self-signed@file
-  #   volumes:
-  #     - ./cockroachdb/certificates:/cockroach/certs
-  #     - ./cockroachdb/data:/cockroach/cockroach-data
-
   postgresql:
     <<: *service
     command: postgres -c config_file=/etc/postgresql/postgresql.conf
