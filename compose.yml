@@ -26,12 +26,12 @@ x-templates:
 configs:
   postgresql:
     content: |
+      effective_cache_size = 64MB
       listen_addresses = '*'
+      maintenance_work_mem = 2MB
       max_connections = 10
       shared_buffers = 16MB
-      effective_cache_size = 64MB
       work_mem = 1MB
-      maintenance_work_mem = 2MB
 
 name: identity-provider
 
