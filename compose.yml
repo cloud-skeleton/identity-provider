@@ -37,6 +37,7 @@ services:
       start-single-node
       --http-addr=0.0.0.0:8080
       --cache=64MiB
+      --insecure
     deploy:
       resources:
         limits:
