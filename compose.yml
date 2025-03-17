@@ -12,7 +12,7 @@ x-templates:
       timeout: 3s
     mem_swappiness: 0
     networks:
-      - identity_provider
+      - identity-provider
       - proxy_bridge
     restart: unless-stopped
     security_opt:
@@ -33,10 +33,16 @@ configs:
       shared_buffers = 16MB
       work_mem = 1MB
 
+  zitadel:
+    content: |
+      ---
+
+      ...
+
 name: identity-provider
 
 networks:
-  identity_provider:
+  identity-provider:
   proxy_bridge:
     external: true
 
@@ -71,22 +77,33 @@ services:
     volumes:
       - ./postgresql/data:/var/lib/postgresql/data
 
-  # zitadel:
-  #   <<: *service
-  #   # deploy:
-  #   #   resources:
-  #   #     limits:
-  #   #       memory: 128M
-  #   # healthcheck:
-  #   #   <<: *service-healthcheck
-  #   #   test:
-  #   #     - CMD
-  #   #     - wget
-  #   #     - --spider
-  #   #     - -q
-  #   #     - http://127.0.0.1:3000/admin/healthz
-  #   image: ghcr.io/zitadel/zitadel:v2.71.3
-  #   # labels:
-  #   #   - traefik.enable=true
-  #   #   - traefik.http.routers.zitadel.rule=Host("${HOSTNAME:?}")
+  zitadel:
+    <<: *service
+    command: >
+      start-from-init
+      --config /etc/zitadel/zitadel.yml
+      --masterkey ${MASTER_KEY:?}
+    configs:
+      - mode: 0440
+        source: zitadel
+        target: /etc/zitadel/zitadel.yml
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    # deploy:
+    #   resources:
+    #     limits:
+    #       memory: 128M
+    # healthcheck:
+    #   <<: *service-healthcheck
+    #   test:
+    #     - CMD
+    #     - wget
+    #     - --spider
+    #     - -q
+    #     - http://127.0.0.1:3000/admin/healthz
+    image: ghcr.io/zitadel/zitadel:v2.71.3
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.zitadel.rule=Host("${HOSTNAME:?}")
 ...
