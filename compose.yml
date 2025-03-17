@@ -101,9 +101,11 @@ services:
       --config /etc/zitadel/zitadel.yml
       --masterkey ${MASTER_KEY:?}
     configs:
-      - mode: 0440
+      - gid: "1000"
+        mode: 0440
         source: zitadel
         target: /etc/zitadel/zitadel.yml
+        uid: "1000"
     depends_on:
       postgresql:
         condition: service_healthy
