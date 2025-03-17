@@ -35,10 +35,7 @@ services:
     <<: *service
     command: >
       start-single-node
-      --cache=64MiB
       --http-addr=0.0.0.0:8080
-#      --listen-addr=localhost:26257
-#      --sql-addr=localhost:26256
     deploy:
       resources:
         limits:
