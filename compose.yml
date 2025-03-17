@@ -57,7 +57,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.middlewares.strip-db-prefix.stripprefix.prefixes=/db
-      - traefik.http.routers.cockroachdb.middlewares=admin-ip-only,strip-db-prefix
+      - traefik.http.routers.cockroachdb.middlewares=admin-ip-only@file,strip-db-prefix
       - traefik.http.routers.cockroachdb.rule=Host("${HOSTNAME:?}") && PathPrefix("/db")
     volumes:
       - ./cockroachdb/certificates:/cockroach/certs
