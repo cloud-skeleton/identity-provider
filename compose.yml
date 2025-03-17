@@ -37,15 +37,14 @@ services:
       start-single-node
       --http-addr=0.0.0.0:8080
       --cache=64MiB
-      --insecure
     deploy:
       resources:
         limits:
           memory: 256M
-    # environment:
-    #   COCKROACH_DATABASE:
-    #   COCKROACH_PASSWORD:
-    #   COCKROACH_USER:
+    environment:
+      COCKROACH_DATABASE: zitadel
+      COCKROACH_PASSWORD: ${DATABASE_USER_PASSWORD:?}
+      COCKROACH_USER: zitadel-user
     # healthcheck:
     #   <<: *service-healthcheck
     #   test:
