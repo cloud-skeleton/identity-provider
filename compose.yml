@@ -65,6 +65,8 @@ services:
     volumes:
       - ./cockroachdb/certificates:/cockroach/certs
       - ./cockroachdb/data:/cockroach/cockroach-data
+      # @TODO: Temporary hack until cockroachdb fixes bootstrap
+      - ./tmp/cockroach.sh:/cockroach/cockroach.sh:ro
 
   # zitadel:
   #   <<: *service
