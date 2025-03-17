@@ -98,6 +98,8 @@ services:
         - pg_isready
         - -d
         - zitadel
+        - -U
+        - zitadel
     image: postgres:17.4-alpine3.21
     volumes:
       - ./postgresql/data:/var/lib/postgresql/data
