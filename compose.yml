@@ -78,9 +78,11 @@ services:
     <<: *service
     command: postgres -c config_file=/etc/postgresql/postgresql.conf
     configs:
-      - mode: 0440
+      - gid: "70"
+        mode: 0440
         source: postgresql
         target: /etc/postgresql/postgresql.conf
+        uid: "70"
     deploy:
       resources:
         limits:
