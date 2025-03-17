@@ -42,11 +42,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 512M
     environment:
       COCKROACH_DATABASE: zitadel
       COCKROACH_PASSWORD: ${DATABASE_USER_PASSWORD:?}
-      COCKROACH_USER: zitadel-user
+      COCKROACH_USER: zitadel
     healthcheck:
       <<: *service-healthcheck
       test:
@@ -65,8 +65,6 @@ services:
     volumes:
       - ./cockroachdb/certificates:/cockroach/certs
       - ./cockroachdb/data:/cockroach/cockroach-data
-      # @TODO: Temporary hack until cockroachdb fixes bootstrap
-      - ./tmp/cockroach.sh:/cockroach/cockroach.sh:ro
 
   # zitadel:
   #   <<: *service
