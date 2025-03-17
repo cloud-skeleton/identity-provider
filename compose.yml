@@ -45,6 +45,7 @@ configs:
               Mode: disable
           Database: zitadel
           Host: postgresql
+          Port: 5432
           User:
             Password: ${DATABASE_USER_PASSWORD:?}
             Username: zitadel
