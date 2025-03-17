@@ -33,7 +33,10 @@ networks:
 services:
   cockroachdb:
     <<: *service
-    command: start-single-node --http-addr=0.0.0.0:8080 --cache=64MiB
+    command: >
+      start-single-node
+      --http-addr=0.0.0.0:8080
+      --cache=64MiB
     deploy:
       resources:
         limits:
@@ -51,6 +54,11 @@ services:
     #     - -q
     #     - http://127.0.0.1:3000/admin/healthz
     image: cockroachdb/cockroach:v25.1.1
+    labels:
+      - traefik.enable=true
+      - traefik.http.middlewares.strip-db-prefix.stripprefix.prefixes=/db
+      - traefik.http.routers.cockroachdb.middlewares=admin-ip-only,strip-db-prefix
+      - traefik.http.routers.cockroachdb.rule=Host("${HOSTNAME:?}") && PathPrefix("/db")
     volumes:
       - ./cockroachdb/certificates:/cockroach/certs
       - ./cockroachdb/data:/cockroach/cockroach-data
