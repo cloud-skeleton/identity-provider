@@ -23,6 +23,16 @@ x-templates:
     <<: *service
     restart: "no"
 
+configs:
+  postgresql:
+    content: |
+      listen_addresses = '*'
+      max_connections = 10
+      shared_buffers = 16MB
+      effective_cache_size = 64MB
+      work_mem = 1MB
+      maintenance_work_mem = 2MB
+
 name: identity-provider
 
 networks:
@@ -31,37 +41,65 @@ networks:
     external: true
 
 services:
-  cockroachdb:
+  # @TODO: Uncomment once we figure out a way to run it on 128MB of RAM
+  # cockroachdb:
+  #   <<: *service
+  #   command: >
+  #     start-single-node
+  #     --http-addr=0.0.0.0:8080
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 512M
+  #   environment:
+  #     COCKROACH_DATABASE: zitadel
+  #     COCKROACH_PASSWORD: ${DATABASE_USER_PASSWORD:?}
+  #     COCKROACH_USER: zitadel
+  #   healthcheck:
+  #     <<: *service-healthcheck
+  #     test:
+  #       - CMD
+  #       - curl
+  #       - -f
+  #       - http://localhost:8080/health?ready=1
+  #   image: cockroachdb/cockroach:v25.1.1
+  #   labels:
+  #     - traefik.enable=true
+  #     - traefik.http.middlewares.strip-db-prefix.stripprefix.prefixes=/db
+  #     - traefik.http.routers.cockroachdb.middlewares=admin-ip-only@file,strip-db-prefix
+  #     - traefik.http.routers.cockroachdb.rule=Host("${HOSTNAME:?}") && PathPrefix("/db")
+  #     - traefik.http.services.cockroachdb.loadbalancer.server.scheme=https
+  #     - traefik.http.services.cockroachdb.loadBalancer.serversTransport=self-signed@file
+  #   volumes:
+  #     - ./cockroachdb/certificates:/cockroach/certs
+  #     - ./cockroachdb/data:/cockroach/cockroach-data
+
+  postgresql:
     <<: *service
-    command: >
-      start-single-node
-      --http-addr=0.0.0.0:8080
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    configs:
+      - mode: 0440
+        source: postgresql
+        target: /etc/postgresql/postgresql.conf
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 128M
     environment:
-      COCKROACH_DATABASE: zitadel
-      COCKROACH_PASSWORD: ${DATABASE_USER_PASSWORD:?}
-      COCKROACH_USER: zitadel
-    healthcheck:
-      <<: *service-healthcheck
-      test:
-        - CMD
-        - curl
-        - -f
-        - http://localhost:8080/health?ready=1
-    image: cockroachdb/cockroach:v25.1.1
-    labels:
-      - traefik.enable=true
-      - traefik.http.middlewares.strip-db-prefix.stripprefix.prefixes=/db
-      - traefik.http.routers.cockroachdb.middlewares=admin-ip-only@file,strip-db-prefix
-      - traefik.http.routers.cockroachdb.rule=Host("${HOSTNAME:?}") && PathPrefix("/db")
-      - traefik.http.services.cockroachdb.loadbalancer.server.scheme=https
-      - traefik.http.services.cockroachdb.loadBalancer.serversTransport=self-signed@file
+      POSTGRES_DB: zitadel
+      POSTGRES_PASSWORD: ${DATABASE_USER_PASSWORD:?}
+      POSTGRES_USER: zitadel
+  #   healthcheck:
+  #     <<: *service-healthcheck
+  #     test:
+  #       - CMD
+  #       - curl
+  #       - -f
+  #       - http://localhost:8080/health?ready=1
+    image: postgres:17.4-alpine3.21
+    # shm_size: 128mb
     volumes:
-      - ./cockroachdb/certificates:/cockroach/certs
-      - ./cockroachdb/data:/cockroach/cockroach-data
+      - ./postgresql/data:/var/lib/postgresql/data
 
   # zitadel:
   #   <<: *service
