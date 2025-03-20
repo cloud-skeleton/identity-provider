@@ -113,9 +113,10 @@ services:
     deploy:
       resources:
         limits:
-          memory: 64M
+          memory: 256M
     healthcheck:
       <<: *service-healthcheck
+      start_period: 40s
       test:
         - CMD
         - zitadel
