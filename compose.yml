@@ -119,8 +119,10 @@ services:
       start_period: 40s
       test:
         - CMD
-        - zitadel
+        - /app/zitadel
         - ready
+        - --config
+        - /etc/zitadel/zitadel.yml
     image: ghcr.io/zitadel/zitadel:v2.71.3
     labels:
       - traefik.enable=true
