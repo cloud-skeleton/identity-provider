@@ -33,7 +33,7 @@ configs:
       shared_buffers = 16MB
       work_mem = 1MB
 
-  zitadel:
+  zitadel-config:
     content: |
       ---
       Database:
@@ -51,24 +51,6 @@ configs:
             Username: zitadel
             SSL:
               Mode: disable
-      DefaultInstance:
-        InstanceName: ${HOSTNAME:?}
-        Org:
-          Name: ${ZITADEL_ORGANIZATION_NAME:?}
-          Human:
-            DisplayName: ${ZITADEL_USER_FIRST_NAME:-} ${ZITADEL_USER_LAST_NAME:-}
-            Email:
-              Address: ${ZITADEL_USER_EMAIL_ADDRESS:?}
-              Verified: true
-            FirstName: ${ZITADEL_USER_FIRST_NAME:-}
-            Gender: ${ZITADEL_USER_GENDER:-}
-            LastName: ${ZITADEL_USER_LAST_NAME:-}
-            NickName: ${ZITADEL_USER_NICK_NAME:-}
-            Password: ${ZITADEL_USER_PASSWORD:?}
-            Phone:
-              Number: ${ZITADEL_USER_PHONE_NUMBER:-}
-              Verified: true
-            UserName: ${ZITADEL_USER_NAME:?}@${HOSTNAME:?}
       ExternalDomain: ${HOSTNAME:?}
       ExternalPort: 443
       Machine:
@@ -105,6 +87,30 @@ configs:
           MachineKeySize: 4096
       TLS:
         Enabled: false
+      ...
+
+  zitadel-steps:
+    content: |
+      ---
+      FirstInstance:
+        InstanceName: ${HOSTNAME:?}
+        Org:
+          Name: ${ZITADEL_ORGANIZATION_NAME:?}
+          Human:
+            DisplayName: ${ZITADEL_USER_FIRST_NAME:-} ${ZITADEL_USER_LAST_NAME:-}
+            Email:
+              Address: ${ZITADEL_USER_EMAIL_ADDRESS:?}
+              Verified: true
+            FirstName: ${ZITADEL_USER_FIRST_NAME:-}
+            Gender: ${ZITADEL_USER_GENDER:-}
+            LastName: ${ZITADEL_USER_LAST_NAME:-}
+            NickName: ${ZITADEL_USER_NICK_NAME:-}
+            Password: ${ZITADEL_USER_PASSWORD:?}
+            PasswordChangeRequired: false
+            Phone:
+              Number: ${ZITADEL_USER_PHONE_NUMBER:-}
+              Verified: true
+            UserName: ${ZITADEL_USER_NAME:?}@${HOSTNAME:?}
       ...
 
 name: identity-provider
@@ -148,12 +154,18 @@ services:
     command: >
       start-from-init
       --config /etc/zitadel/zitadel.yml
+      --steps /etc/zitadel/steps.yml
       --masterkey ${MASTER_KEY:?}
     configs:
       - gid: "1000"
         mode: 0440
-        source: zitadel
+        source: zitadel-config
         target: /etc/zitadel/zitadel.yml
+        uid: "1000"
+      - gid: "1000"
+        mode: 0440
+        source: zitadel-steps
+        target: /etc/zitadel/steps.yml
         uid: "1000"
     depends_on:
       postgresql:
