@@ -53,8 +53,26 @@ configs:
               Mode: disable
       ExternalDomain: ${HOSTNAME:?}
       ExternalPort: 443
+      Machine:
+        Identification:
+          PrivateIp:
+            Enabled: false
+          Hostname:
+            Enabled: true
+          Webhook:
+            Enabled: false
       Metrics:
         Type: none
+      Notifications:
+        LegacyEnabled: false
+      SystemDefaults:
+        PasswordHasher:
+          Hasher:
+            Algorithm: argon2id
+            Hash: sha512
+        SecretGenerators:
+          ApplicationKeySize: 4096
+          MachineKeySize: 4096
       TLS:
         Enabled: false
       ...
