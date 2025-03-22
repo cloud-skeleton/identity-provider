@@ -68,7 +68,7 @@ configs:
             Phone:
               Number: ${ZITADEL_USER_PHONE_NUMBER:-}
               Verified: true
-            UserName: ${ZITADEL_USER_NAME:?}
+            UserName: ${ZITADEL_USER_NAME:?}@${HOSTNAME:?}
       ExternalDomain: ${HOSTNAME:?}
       ExternalPort: 443
       Machine:
