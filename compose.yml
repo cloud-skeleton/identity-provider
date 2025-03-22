@@ -191,6 +191,7 @@ services:
       - traefik.enable=true
       - traefik.http.routers.zitadel.rule=Host("${HOSTNAME:?}")
       - traefik.http.services.zitadel.loadbalancer.server.port=8080
+      - traefik.http.services.zitadel.loadbalancer.server.scheme=h2c
     networks:
       - identity-provider
       - proxy_bridge
