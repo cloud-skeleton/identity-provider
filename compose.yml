@@ -44,10 +44,10 @@ configs:
               Mode: disable
           Database: zitadel
           Host: postgresql
-          MaxConnIdleTime: 5m
-          MaxConnLifetime: 1h
+          MaxConnIdleTime: 1m
+          MaxConnLifetime: 5m
           MaxIdleConns: 2
-          MaxOpenConns: 10
+          MaxOpenConns: 8
           Port: 5432
           User:
             Password: ${DATABASE_USER_PASSWORD:?}
@@ -130,6 +130,35 @@ secrets:
     environment: MASTER_KEY
 
 services:
+  # pgbouncer:
+  #   <<: *service
+  #   depends_on:
+  #     postgresql:
+  #       condition: service_healthy
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 32M
+  #   environment:
+  #     POSTGRESQL_HOST: postgresql
+  #     POSTGRESQL_PASSWORD_FILE: /run/secrets/postgresql-root-pasword
+  #   # healthcheck:
+  #   #   <<: *service-healthcheck
+  #   #   test:
+  #   #     - CMD
+  #   #     - pg_isready
+  #   #     - -d
+  #   #     - postgres
+  #   #     - -U
+  #   #     - postgres
+  #   image: bitnami/pgbouncer:1.24.0-debian-12-r7
+  #   secrets:
+  #     - gid: "1000"
+  #       mode: 0440
+  #       source: postgresql-root-pasword
+  #       target: /run/secrets/postgresql-root-pasword
+  #       uid: "1000"
+
   postgresql:
     <<: *service
     command: postgres -c config_file=/etc/postgresql/postgresql.conf
