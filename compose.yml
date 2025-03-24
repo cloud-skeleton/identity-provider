@@ -47,7 +47,7 @@ configs:
           MaxConnIdleTime: 5m
           MaxConnLifetime: 1h
           MaxIdleConns: 1
-          MaxOpenConns: 8
+          MaxOpenConns: 7
           Port: 5432
           User:
             Password: ${DATABASE_USER_PASSWORD:?}
