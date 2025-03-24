@@ -124,6 +124,8 @@ networks:
     external: true
 
 secrets:
+  postgresql-root-pasword:
+    environment: DATABASE_ROOT_USER_PASSWORD
   zitadel-master-key:
     environment: MASTER_KEY
 
@@ -142,7 +144,7 @@ services:
         limits:
           memory: 128M
     environment:
-      POSTGRES_PASSWORD: ${DATABASE_ROOT_USER_PASSWORD:?}
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgresql-root-pasword
     healthcheck:
       <<: *service-healthcheck
       test:
@@ -153,6 +155,12 @@ services:
         - -U
         - postgres
     image: postgres:17.4-alpine3.21
+    secrets:
+      - gid: "1000"
+        mode: 0440
+        source: postgresql-root-pasword
+        target: /run/secrets/postgresql-root-pasword
+        uid: "1000"
     volumes:
       - ./postgresql/data:/var/lib/postgresql/data
 
