@@ -233,6 +233,48 @@ services:
     volumes:
       - state:/state
 
+  zitadel-setup:
+    <<: *job
+    command:
+      - |
+          ZITADEL_VERSION="$(zitadel -v)"
+          if [ "$(cat /state/setup-version 2> /dev/null)" != "$ZITADEL_VERSION" ]; then
+            zitadel setup --init-projections \
+              --masterkeyFile /run/secrets/zitadel-master-key \
+              --steps /etc/zitadel/steps.yml
+              --config /etc/zitadel/zitadel.yml
+            echo "$ZITADEL_VERSION" > /state/setup-version
+          fi
+    configs:
+      - gid: "1000"
+        mode: 0440
+        source: zitadel-config
+        target: /etc/zitadel/zitadel.yml
+        uid: "1000"
+      - gid: "1000"
+        mode: 0440
+        source: zitadel-steps
+        target: /etc/zitadel/steps.yml
+        uid: "1000"
+    depends_on:
+      zitadel-init:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    entrypoint: sh -c
+    image: ghcr.io/zitadel/zitadel:v2.71.3-debug
+    secrets:
+      - gid: "1000"
+        mode: 0440
+        source: zitadel-master-key
+        target: /run/secrets/zitadel-master-key
+        uid: "1000"
+    user: root
+    volumes:
+      - state:/state
+
 volumes:
   state:
 ...
