@@ -44,6 +44,10 @@ configs:
               Mode: disable
           Database: zitadel
           Host: postgresql
+          MaxConnIdleTime: 5m
+          MaxConnLifetime: 1h
+          MaxIdleConns: 2
+          MaxOpenConns: 10
           Port: 5432
           User:
             Password: ${DATABASE_USER_PASSWORD:?}
@@ -152,23 +156,64 @@ services:
     volumes:
       - ./postgresql/data:/var/lib/postgresql/data
 
-  zitadel:
-    <<: *service
-    command: >
-      start-from-init
-      --config /etc/zitadel/zitadel.yml
-      --steps /etc/zitadel/steps.yml
-      --masterkeyFile /run/secrets/zitadel-master-key
+  # zitadel:
+  #   <<: *service
+  #   command: >
+  #     start-from-init
+  #     --config /etc/zitadel/zitadel.yml
+  #     --steps /etc/zitadel/steps.yml
+  #     --masterkeyFile /run/secrets/zitadel-master-key
+  #   configs:
+  #     - gid: "1000"
+  #       mode: 0440
+  #       source: zitadel-config
+  #       target: /etc/zitadel/zitadel.yml
+  #       uid: "1000"
+  #     - gid: "1000"
+  #       mode: 0440
+  #       source: zitadel-steps
+  #       target: /etc/zitadel/steps.yml
+  #       uid: "1000"
+  #   depends_on:
+  #     postgresql:
+  #       condition: service_healthy
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 256M
+  #   healthcheck:
+  #     <<: *service-healthcheck
+  #     start_period: 40s
+  #     test:
+  #       - CMD
+  #       - /app/zitadel
+  #       - ready
+  #       - --config
+  #       - /etc/zitadel/zitadel.yml
+  #   image: ghcr.io/zitadel/zitadel:v2.71.3
+  #   labels:
+  #     - traefik.enable=true
+  #     - traefik.http.routers.zitadel.rule=Host("${HOSTNAME:?}")
+  #     - traefik.http.services.zitadel.loadbalancer.server.port=8080
+  #     - traefik.http.services.zitadel.loadbalancer.server.scheme=h2c
+  #   networks:
+  #     - identity-provider
+  #     - proxy_bridge
+  #   secrets:
+  #     - gid: "1000"
+  #       mode: 0440
+  #       source: zitadel-master-key
+  #       target: /run/secrets/zitadel-master-key
+  #       uid: "1000"
+
+  zitadel-init:
+    <<: *job
+    command: init --config /etc/zitadel/zitadel.yml
     configs:
       - gid: "1000"
         mode: 0440
         source: zitadel-config
         target: /etc/zitadel/zitadel.yml
-        uid: "1000"
-      - gid: "1000"
-        mode: 0440
-        source: zitadel-steps
-        target: /etc/zitadel/steps.yml
         uid: "1000"
     depends_on:
       postgresql:
@@ -177,68 +222,5 @@ services:
       resources:
         limits:
           memory: 256M
-    healthcheck:
-      <<: *service-healthcheck
-      start_period: 40s
-      test:
-        - CMD
-        - /app/zitadel
-        - ready
-        - --config
-        - /etc/zitadel/zitadel.yml
     image: ghcr.io/zitadel/zitadel:v2.71.3
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.zitadel.rule=Host("${HOSTNAME:?}")
-      - traefik.http.services.zitadel.loadbalancer.server.port=8080
-      - traefik.http.services.zitadel.loadbalancer.server.scheme=h2c
-    networks:
-      - identity-provider
-      - proxy_bridge
-    secrets:
-      - gid: "1000"
-        mode: 0440
-        source: zitadel-master-key
-        target: /run/secrets/zitadel-master-key
-        uid: "1000"
-
-  # zitadel-init:
-  #   <<: *job
-  #   # command: >
-  #   #   start-from-init
-  #   #   --config /etc/zitadel/zitadel.yml
-  #   #   --steps /etc/zitadel/steps.yml
-  #   #   --masterkey ${MASTER_KEY:?}
-  #   # configs:
-  #   #   - gid: "1000"
-  #   #     mode: 0440
-  #   #     source: zitadel-config
-  #   #     target: /etc/zitadel/zitadel.yml
-  #   #     uid: "1000"
-  #   #   - gid: "1000"
-  #   #     mode: 0440
-  #   #     source: zitadel-steps
-  #   #     target: /etc/zitadel/steps.yml
-  #   #     uid: "1000"
-  #   # depends_on:
-  #   #   postgresql:
-  #   #     condition: service_healthy
-  #   # deploy:
-  #   #   resources:
-  #   #     limits:
-  #   #       memory: 256M
-  #   # healthcheck:
-  #   #   <<: *service-healthcheck
-  #   #   start_period: 40s
-  #   #   test:
-  #   #     - CMD
-  #   #     - /app/zitadel
-  #   #     - ready
-  #   #     - --config
-  #   #     - /etc/zitadel/zitadel.yml
-  #   # image: ghcr.io/zitadel/zitadel:v2.71.3
-  #   # labels:
-  #   #   - traefik.enable=true
-  #   #   - traefik.http.routers.zitadel.rule=Host("${HOSTNAME:?}")
-  #   #   - traefik.http.services.zitadel.loadbalancer.server.port=8080
 ...
