@@ -153,7 +153,6 @@ services:
       AUTH_TYPE: scram-sha-256
       DB_HOST: postgresql
       DEFAULT_POOL_SIZE: 5
-      DISABLE_PQEXEC: 1
       MIN_POOL_SIZE: 2
       POOL_MODE: transaction
     healthcheck:
