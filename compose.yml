@@ -238,12 +238,12 @@ services:
     command:
       - |
           ZITADEL_VERSION="$(zitadel -v)"
-          if [ "$(cat /state/setup-version 2> /dev/null)" != "$ZITADEL_VERSION" ]; then
+          if [ "$(cat /state/setup-version 2> /dev/null)" != "$$ZITADEL_VERSION" ]; then
             zitadel setup --init-projections \
               --masterkeyFile /run/secrets/zitadel-master-key \
               --steps /etc/zitadel/steps.yml
               --config /etc/zitadel/zitadel.yml
-            echo "$ZITADEL_VERSION" > /state/setup-version
+            echo "$$ZITADEL_VERSION" > /state/setup-version
           fi
     configs:
       - gid: "1000"
