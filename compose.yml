@@ -161,6 +161,8 @@ services:
       test:
         - CMD
         - pg_isready
+        - -h
+        - localhost
         - -d
         - postgres
         - -U
@@ -187,8 +189,10 @@ services:
       test:
         - CMD
         - pg_isready
-        - -h
-        - localhost
+        - -d
+        - postgres
+        - -U
+        - postgres
     image: postgres:17.4-alpine3.21
     secrets:
       - gid: "1000"
