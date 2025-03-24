@@ -23,6 +23,10 @@ x-templates:
     restart: "no"
 
 configs:
+  pgbouncer-userlist:
+    content: |
+      "postgres" "${DATABASE_ROOT_USER_PASSWORD:?}"
+
   postgresql:
     content: |
       effective_cache_size = 64MB
@@ -124,14 +128,18 @@ networks:
     external: true
 
 secrets:
-  postgresql-root-pasword:
-    environment: DATABASE_ROOT_USER_PASSWORD
   zitadel-master-key:
     environment: MASTER_KEY
 
 services:
   pgbouncer:
     <<: *service
+    configs:
+      - gid: "70"
+        mode: 0440
+        source: pgbouncer-userlist
+        target: /etc/pgbouncer/userlist.txt
+        uid: "70"
     depends_on:
       postgresql:
         condition: service_healthy
@@ -140,28 +148,22 @@ services:
         limits:
           memory: 32M
     environment:
-      PGBOUNCER_DEFAULT_POOL_SIZE: 10
-      PGBOUNCER_INIT_SLEEP_TIME: 0
-      PGBOUNCER_MIN_POOL_SIZE: 10
-      PGBOUNCER_POOL_MODE: transaction
-      POSTGRESQL_HOST: postgresql
-      POSTGRESQL_PASSWORD_FILE: /run/secrets/postgresql-root-pasword
-    # healthcheck:
-    #   <<: *service-healthcheck
-    #   test:
-    #     - CMD
-    #     - pg_isready
-    #     - -d
-    #     - postgres
-    #     - -U
-    #     - postgres
-    image: bitnami/pgbouncer:1.24.0-debian-12-r7
-    secrets:
-      - gid: "1000"
-        mode: 0440
-        source: postgresql-root-pasword
-        target: /run/secrets/postgresql-root-pasword
-        uid: "1000"
+      AUTH_TYPE: scram-sha-256
+      DATABASE_URL: postgres://postgres@postgresql:5432/postgres
+      DEFAULT_POOL_SIZE: 5
+      DISABLE_PQEXEC: 1
+      MIN_POOL_SIZE: 2
+      POOL_MODE: transaction
+    healthcheck:
+      <<: *service-healthcheck
+      test:
+        - CMD
+        - pg_isready
+        - -d
+        - postgres
+        - -U
+        - postgres
+    image: edoburu/pgbouncer:v1.24.0-p1
 
   postgresql:
     <<: *service
@@ -256,7 +258,7 @@ services:
         target: /etc/zitadel/zitadel.yml
         uid: "1000"
     depends_on:
-      postgresql:
+      pgbouncer:
         condition: service_healthy
     deploy:
       resources:
