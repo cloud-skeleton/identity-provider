@@ -208,7 +208,12 @@ services:
 
   zitadel-init:
     <<: *job
-    command: '[ -f /state/init ] || { zitadel init --config /etc/zitadel/zitadel.yml && echo 1 > /state/init; }'
+    command:
+      - |
+          if [ ! -f /state/initialized ]; then
+            zitadel init --config /etc/zitadel/zitadel.yml
+            echo 1 > /state/initialized
+          fi
     configs:
       - gid: "1000"
         mode: 0440
