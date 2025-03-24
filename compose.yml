@@ -46,8 +46,8 @@ configs:
           Host: postgresql
           MaxConnIdleTime: 5m
           MaxConnLifetime: 1h
-          MaxIdleConns: 2
-          MaxOpenConns: 5
+          MaxIdleConns: 1
+          MaxOpenConns: 8
           Port: 5432
           User:
             Password: ${DATABASE_USER_PASSWORD:?}
