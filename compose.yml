@@ -241,7 +241,7 @@ services:
       - |
           ZITADEL_VERSION="$(zitadel -v)"
           if [ "$(cat /state/setup-version 2> /dev/null)" != "$$ZITADEL_VERSION" ]; then
-            zitadel setup --init-projections \
+            zitadel setup --init-projections=true \
               --masterkeyFile /run/secrets/zitadel-master-key \
               --steps /etc/zitadel/steps.yml \
               --config /etc/zitadel/zitadel.yml
