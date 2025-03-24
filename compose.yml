@@ -208,9 +208,7 @@ services:
 
   zitadel-init:
     <<: *job
-    command: >
-      [ -f /state/initialized ] ||
-      { zitadel init --config /etc/zitadel/zitadel.yml && echo 1 > /state/initialized; }
+    command: '[ -f /state/init ] || { zitadel init --config /etc/zitadel/zitadel.yml && echo 1 > /state/init; }'
     configs:
       - gid: "1000"
         mode: 0440
@@ -224,9 +222,7 @@ services:
       resources:
         limits:
           memory: 256M
-    entrypoint:
-      - sh
-      - -c
+    entrypoint: sh -c
     image: ghcr.io/zitadel/zitadel:v2.71.3-debug
     volumes:
       - state:/state
