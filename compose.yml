@@ -23,10 +23,6 @@ x-templates:
     restart: "no"
 
 configs:
-  pgbouncer-userlist:
-    content: |
-      "postgres" "${DATABASE_ROOT_USER_PASSWORD:?}"
-
   postgresql:
     content: |
       effective_cache_size = 64MB
@@ -47,11 +43,11 @@ configs:
             SSL:
               Mode: disable
           Database: zitadel
-          Host: pgbouncer
+          Host: postgresql
           MaxConnIdleTime: 5m
           MaxConnLifetime: 1h
-          MaxIdleConns: 5
-          MaxOpenConns: 20
+          MaxIdleConns: 2
+          MaxOpenConns: 5
           Port: 5432
           User:
             Password: ${DATABASE_USER_PASSWORD:?}
@@ -134,40 +130,6 @@ secrets:
     environment: MASTER_KEY
 
 services:
-  pgbouncer:
-    <<: *service
-    configs:
-      - gid: "70"
-        mode: 0440
-        source: pgbouncer-userlist
-        target: /etc/pgbouncer/userlist.txt
-        uid: "70"
-    depends_on:
-      postgresql:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          memory: 32M
-    environment:
-      AUTH_TYPE: scram-sha-256
-      DB_HOST: postgresql
-      DEFAULT_POOL_SIZE: 5
-      MIN_POOL_SIZE: 2
-      POOL_MODE: transaction
-    healthcheck:
-      <<: *service-healthcheck
-      test:
-        - CMD
-        - pg_isready
-        - -h
-        - localhost
-        - -d
-        - postgres
-        - -U
-        - postgres
-    image: edoburu/pgbouncer:v1.24.0-p1
-
   postgresql:
     <<: *service
     command: postgres -c config_file=/etc/postgresql/postgresql.conf
@@ -261,7 +223,7 @@ services:
         target: /etc/zitadel/zitadel.yml
         uid: "1000"
     depends_on:
-      pgbouncer:
+      postgresql:
         condition: service_healthy
     deploy:
       resources:
