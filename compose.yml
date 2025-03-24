@@ -229,6 +229,7 @@ services:
           memory: 256M
     entrypoint: sh -c
     image: ghcr.io/zitadel/zitadel:v2.71.3-debug
+    user: root
     volumes:
       - state:/state
 
