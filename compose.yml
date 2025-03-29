@@ -54,6 +54,17 @@ configs:
             Username: zitadel
             SSL:
               Mode: disable
+      DefaultInstance:
+        DomainPolicy:
+          UserLoginMustBeDomain: true
+        LockoutPolicy:
+          MaxOTPAttempts: 10
+          MaxPasswordAttempts: 10
+        LoginPolicy:
+          AllowExternalIDP: false
+          AllowRegister: false
+          ForceMFA: true
+          PasswordlessType: 0
       ExternalDomain: ${HOSTNAME:?}
       ExternalPort: 443
       Machine:
@@ -68,6 +79,12 @@ configs:
         Type: none
       Notifications:
         LegacyEnabled: false
+      SAML:
+        ProviderConfig:
+          IDPConfig:
+            SignatureAlgorithm: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'
+          MetadataConfig:
+            SignatureAlgorithm: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'
       SystemDefaults:
         KeyConfig:
           CertificateLifetime: 4320h
@@ -233,7 +250,7 @@ services:
     image: ghcr.io/zitadel/zitadel:v2.71.3-debug
     user: root
     volumes:
-      - state:/state
+      - ./state:/state
 
   zitadel-setup:
     <<: *job
@@ -275,8 +292,5 @@ services:
         uid: "1000"
     user: root
     volumes:
-      - state:/state
-
-volumes:
-  state:
+      - ./state:/state
 ...
