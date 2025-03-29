@@ -67,12 +67,12 @@ configs:
           PasswordlessType: 0
         SMTPConfiguration:
           SMTP:
-            From: noreply@${HOST_NAME:?}
-            FromName: Zitadel
             Host: ${SMTP_SERVER_HOST_NAME:?}:${SMTP_SERVER_PORT:-25}
-            Password: ${SMTP_SERVER_USER_PASSWORD:?}
-            TLS: ${SMTP_SERVER_ENABLE_TLS:-false}
             User: ${SMTP_SERVER_USER_NAME:?}
+            Password: ${SMTP_SERVER_USER_PASSWORD:?}
+          From: noreply@${HOST_NAME:?}
+          FromName: Zitadel
+          TLS: ${SMTP_SERVER_ENABLE_TLS:-false}
       ExternalDomain: ${HOST_NAME:?}
       ExternalPort: 443
       Machine:
