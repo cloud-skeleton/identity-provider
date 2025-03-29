@@ -67,13 +67,13 @@ configs:
           PasswordlessType: 0
         SMTPConfiguration:
           SMTP:
-            From: noreply@${HOSTNAME:?}
+            From: noreply@${HOST_NAME:?}
             FromName: Zitadel
             Host: ${SMTP_SERVER_HOST_NAME:?}:${SMTP_SERVER_PORT:-25}
             Password: ${SMTP_SERVER_USER_PASSWORD:?}
             TLS: ${SMTP_SERVER_ENABLE_TLS:-false}
             User: ${SMTP_SERVER_USER_NAME:?}
-      ExternalDomain: ${HOSTNAME:?}
+      ExternalDomain: ${HOST_NAME:?}
       ExternalPort: 443
       Machine:
         Identification:
@@ -121,7 +121,7 @@ configs:
     content: |
       ---
       FirstInstance:
-        InstanceName: ${HOSTNAME:?}
+        InstanceName: ${HOST_NAME:?}
         Org:
           Name: ${ZITADEL_ORGANIZATION_NAME:?}
           Human:
@@ -138,7 +138,7 @@ configs:
             Phone:
               Number: ${ZITADEL_USER_PHONE_NUMBER:-}
               Verified: true
-            UserName: ${ZITADEL_USER_NAME:?}@${HOSTNAME:?}
+            UserName: ${ZITADEL_USER_NAME:?}@${HOST_NAME:?}
       ...
 
 name: identity-provider
@@ -220,7 +220,7 @@ services:
     image: ghcr.io/zitadel/zitadel:v2.71.3
     labels:
       - traefik.enable=true
-      - traefik.http.routers.zitadel.rule=Host("${HOSTNAME:?}")
+      - traefik.http.routers.zitadel.rule=Host("${HOST_NAME:?}")
       - traefik.http.services.zitadel.loadbalancer.server.port=8080
       - traefik.http.services.zitadel.loadbalancer.server.scheme=h2c
     networks:
