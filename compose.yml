@@ -69,7 +69,7 @@ configs:
           PasswordlessType: 0
         PasswordAgePolicy:
           ExpireWarnDays: 14
-          ExpireWarnDays: 90
+          MaxAgeDays: 90
         Restrictions:
           DisallowPublicOrgRegistration: true
         SMTPConfiguration:
