@@ -77,6 +77,8 @@ configs:
           From: noreply@${HOST_NAME:?}
           FromName: Zitadel
           TLS: ${SMTP_SERVER_ENABLE_TLS:-false}
+        WebKeys:
+          Type: ed25519
       ExternalDomain: ${HOST_NAME:?}
       ExternalPort: 443
       Machine:
