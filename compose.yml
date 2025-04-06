@@ -59,6 +59,8 @@ configs:
           UserLoginMustBeDomain: true
         Features:
           PermissionCheckV2: true
+        LabelPolicy:
+          HideLoginNameSuffix: true
         LockoutPolicy:
           MaxOTPAttempts: 10
           MaxPasswordAttempts: 10
