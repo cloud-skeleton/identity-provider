@@ -104,6 +104,9 @@ configs:
             SignatureAlgorithm: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'
           MetadataConfig:
             SignatureAlgorithm: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'
+      SystemAPIUsers:
+        - Cloud Skeleton Automation:
+            KeyData: ${ZITADEL_AUTOMATION_USER_KEY}
       SystemDefaults:
         KeyConfig:
           CertificateLifetime: 4320h
