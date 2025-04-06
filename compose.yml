@@ -55,10 +55,10 @@ configs:
             SSL:
               Mode: disable
       DefaultInstance:
+        DomainPolicy:
+          UserLoginMustBeDomain: true
         Features:
           PermissionCheckV2: true
-        LabelPolicy:
-          HideLoginNameSuffix: true
         LockoutPolicy:
           MaxOTPAttempts: 10
           MaxPasswordAttempts: 10
