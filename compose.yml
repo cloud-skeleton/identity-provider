@@ -67,6 +67,9 @@ configs:
           AllowRegister: false
           ForceMFA: true
           PasswordlessType: 0
+        PasswordAgePolicy:
+          ExpireWarnDays: 14
+          ExpireWarnDays: 90
         Restrictions:
           DisallowPublicOrgRegistration: true
         SMTPConfiguration:
