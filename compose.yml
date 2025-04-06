@@ -70,6 +70,8 @@ configs:
         PasswordAgePolicy:
           ExpireWarnDays: 14
           MaxAgeDays: 90
+        PasswordComplexityPolicy:
+          MinLength: 15
         Restrictions:
           DisallowPublicOrgRegistration: true
         SMTPConfiguration:
