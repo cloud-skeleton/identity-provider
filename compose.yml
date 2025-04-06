@@ -117,7 +117,7 @@ configs:
         Enabled: false
       ...
 
-  zitadel-steps:
+  zitadel-init:
     content: |
       ---
       FirstInstance:
@@ -268,8 +268,8 @@ services:
           if [ "$(cat /state/setup-version 2> /dev/null)" != "$$ZITADEL_VERSION" ]; then
             zitadel setup --init-projections=true \
               --masterkeyFile /run/secrets/zitadel-master-key \
-              --steps /etc/zitadel/steps.yml \
-              --config /etc/zitadel/zitadel.yml
+              --config /etc/zitadel/zitadel.yml \
+              --steps /run/zitadel/init.yml
             echo "$$ZITADEL_VERSION" > /state/setup-version
           fi
     configs:
@@ -280,8 +280,8 @@ services:
         uid: "1000"
       - gid: "1000"
         mode: 0440
-        source: zitadel-steps
-        target: /etc/zitadel/steps.yml
+        source: zitadel-init
+        target: /run/zitadel/init.yml
         uid: "1000"
     depends_on:
       zitadel-init:
