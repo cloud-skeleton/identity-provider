@@ -68,8 +68,6 @@ configs:
           ForceMFA: true
           PasswordlessType: 0
         Restrictions:
-          AllowedLanguages:
-            - en
           DisallowPublicOrgRegistration: true
         SMTPConfiguration:
           SMTP:
