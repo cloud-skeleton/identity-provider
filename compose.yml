@@ -35,6 +35,8 @@ configs:
   zitadel-config:
     content: |
       ---
+      Auth:
+        AmountOfCachedAuthRequests: 1000
       Caches:
         Connectors:
           Memory:
