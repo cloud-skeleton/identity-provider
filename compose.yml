@@ -242,23 +242,6 @@ services:
     volumes:
       - ./state/postgresql/data:/var/lib/postgresql/data
 
-  pulumi:
-    <<: *job
-    command:
-      - |
-        pulumi version
-    depends_on:
-      zitadel:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          memory: 16M
-    entrypoint: bash -c
-    image: pulumi/pulumi-python:3.160.0-debian
-    volumes:
-      - ./state:/state
-
   zitadel:
     <<: *service
     command: >
@@ -304,6 +287,23 @@ services:
         source: zitadel-master-key
         target: /run/secrets/zitadel-master-key
         uid: "1000"
+    volumes:
+      - ./state:/state
+
+  zitadel-config:
+    <<: *job
+    command:
+      - |
+        pulumi version
+    depends_on:
+      zitadel:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 16M
+    entrypoint: bash -c
+    image: pulumi/pulumi-python:3.160.0-debian
     volumes:
       - ./state:/state
 
