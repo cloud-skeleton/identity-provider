@@ -35,6 +35,23 @@ configs:
   zitadel-config:
     content: |
       ---
+      Caches:
+        Connectors:
+          Memory:
+            Enabled: true
+          Postgres:
+            Enabled: false
+        IdPFormCallbacks:
+          Connector: Memory
+        Instance:
+          Connector: Memory
+        Milestones:
+          Connector: Memory
+        Organization:
+          Connector: Memory
+      Console:
+        ShortCache:
+          MaxAge: 1m
       Database:
         postgres:
           Admin:
@@ -176,7 +193,7 @@ services:
           STATE_FILE=/state/keys/cloud-skeleton-automation.private.pem
           mkdir -p "$(dirname "$$STATE_FILE")"
           if [ ! -f "$$STATE_FILE" ]; then
-            openssl genpkey -algorithm Ed25519 -out /state/keys/cloud-skeleton-automation.private.pem
+            openssl genpkey -algorithm ed25519 -out /state/keys/cloud-skeleton-automation.private.pem
             openssl pkey -in /state/keys/cloud-skeleton-automation.private.pem \
               -pubout -out /state/keys/cloud-skeleton-automation.public.pem
           fi
@@ -268,6 +285,8 @@ services:
         source: zitadel-master-key
         target: /run/secrets/zitadel-master-key
         uid: "1000"
+    volumes:
+      - ./state:/state
 
   zitadel-init:
     <<: *job
