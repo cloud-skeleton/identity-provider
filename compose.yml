@@ -201,7 +201,7 @@ services:
         target: /run/secrets/postgresql-root-pasword
         uid: "1000"
     volumes:
-      - ./postgresql/data:/var/lib/postgresql/data
+      - ./state/postgresql/data:/var/lib/postgresql/data
 
   zitadel:
     <<: *service
@@ -251,9 +251,10 @@ services:
     <<: *job
     command:
       - |
-          if [ ! -f /state/initialized ]; then
+          STATE_FILE=/state/zitadel/initialized
+          if [ ! -f $$STATE_FILE ]; then
             zitadel init --config /etc/zitadel/zitadel.yml
-            touch /state/initialized
+            echo "$(date +%s)" > $$STATE_FILE
           fi
     configs:
       - gid: "1000"
@@ -278,13 +279,15 @@ services:
     <<: *job
     command:
       - |
-          ZITADEL_VERSION="$(zitadel -v)"
-          if [ "$(cat /state/setup-version 2> /dev/null)" != "$$ZITADEL_VERSION" ]; then
+          STATE_FILE=/state/zitadel/last-known-version
+          ZITADEL_VERSION_CURRENT="$(zitadel -v)"
+          ZITADEL_VERSION_LAST_KNOWN="$(cat $$STATE_FILE 2> /dev/null)"
+          if [ "$$ZITADEL_VERSION_LAST_KNOWN" != "$$ZITADEL_VERSION_CURRENT" ]; then
             zitadel setup --init-projections=true \
               --masterkeyFile /run/secrets/zitadel-master-key \
               --config /etc/zitadel/zitadel.yml \
               --steps /run/zitadel/init.yml
-            echo "$$ZITADEL_VERSION" > /state/setup-version
+            echo "$$ZITADEL_VERSION_CURRENT" > $$STATE_FILE
           fi
     configs:
       - gid: "1000"
