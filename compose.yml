@@ -252,9 +252,10 @@ services:
     command:
       - |
           STATE_FILE=/state/zitadel/initialized
-          if [ ! -f $$STATE_FILE ]; then
+          mkdir -p "$(dirname "$$STATE_FILE")"
+          if [ ! -f "$$STATE_FILE" ]; then
             zitadel init --config /etc/zitadel/zitadel.yml
-            echo "$(date +%s)" > $$STATE_FILE
+            echo "$(date +%s)" > "$$STATE_FILE"
           fi
     configs:
       - gid: "1000"
@@ -280,14 +281,15 @@ services:
     command:
       - |
           STATE_FILE=/state/zitadel/last-known-version
+          mkdir -p "$(dirname "$$STATE_FILE")"
           ZITADEL_VERSION_CURRENT="$(zitadel -v)"
-          ZITADEL_VERSION_LAST_KNOWN="$(cat $$STATE_FILE 2> /dev/null)"
+          ZITADEL_VERSION_LAST_KNOWN="$(cat "$$STATE_FILE" 2> /dev/null)"
           if [ "$$ZITADEL_VERSION_LAST_KNOWN" != "$$ZITADEL_VERSION_CURRENT" ]; then
             zitadel setup --init-projections=true \
               --masterkeyFile /run/secrets/zitadel-master-key \
               --config /etc/zitadel/zitadel.yml \
               --steps /run/zitadel/init.yml
-            echo "$$ZITADEL_VERSION_CURRENT" > $$STATE_FILE
+            echo "$$ZITADEL_VERSION_CURRENT" > "$$STATE_FILE"
           fi
     configs:
       - gid: "1000"
