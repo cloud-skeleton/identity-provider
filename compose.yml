@@ -42,13 +42,13 @@ configs:
           Postgres:
             Enabled: false
         IdPFormCallbacks:
-          Connector: Memory
+          Connector: memory
         Instance:
-          Connector: Memory
+          Connector: memory
         Milestones:
-          Connector: Memory
+          Connector: memory
         Organization:
-          Connector: Memory
+          Connector: memory
       Console:
         ShortCache:
           MaxAge: 1m
