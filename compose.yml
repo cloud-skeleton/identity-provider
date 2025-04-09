@@ -294,7 +294,7 @@ services:
       resources:
         limits:
           memory: 64M
-    entrypoint: sh -c
+    entrypoint: bash -c
     image: ghcr.io/zitadel/zitadel:v2.71.3-debug
     user: root
     volumes:
@@ -367,7 +367,7 @@ services:
       resources:
         limits:
           memory: 128M
-    entrypoint: sh -c
+    entrypoint: bash -c
     image: ghcr.io/zitadel/zitadel:v2.71.3-debug
     secrets:
       - gid: "1000"
