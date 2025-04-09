@@ -334,7 +334,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 64M
+          memory: 128M
     entrypoint: bash -c
     environment:
       PULUMI_CONFIG_PASSPHRASE: ""
