@@ -1,3 +1,3 @@
 from pulumiverse_zitadel import MachineUser
 
-MachineUser("testuser", user_name = "testuser", description = "test USER")
+MachineUser("testuser1", user_name = "testuser1", description = "test USER1")

@@ -341,10 +341,12 @@ services:
           ZITADEL_VERSION_CURRENT="$(zitadel -v)"
           ZITADEL_VERSION_LAST_KNOWN="$(cat "$$STATE_FILE" 2> /dev/null)"
           if [ "$$ZITADEL_VERSION_LAST_KNOWN" != "$$ZITADEL_VERSION_CURRENT" ]; then
+            mkdir -p /state/secrets
             zitadel setup --init-projections=true \
               --masterkeyFile /run/secrets/zitadel-master-key \
               --config /etc/zitadel/zitadel.yml \
-              --steps /run/zitadel/init.yml
+              --steps /run/zitadel/init.yml | \
+              tee >(grep --line-buffered -m 1 '"type":"serviceaccount"' > /state/secrets/zitadel-cloud.skeleton.iac.json)
             echo "$$ZITADEL_VERSION_CURRENT" > "$$STATE_FILE"
           fi
     configs:
