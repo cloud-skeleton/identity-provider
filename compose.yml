@@ -319,8 +319,9 @@ services:
         target: /run/secrets/pulumi-encryption-password
     volumes:
       - ./pulumi:/pulumi/projects/identity-provider
-      - ./state:/state
+      # - ./state:/state
       - ./state/pulumi/core:/root/.pulumi
+      - ./state/pulumi/venv:/pulumi/projects/identity-provider/.venv
     working_dir: /pulumi/projects/identity-provider
 
   zitadel-init:
