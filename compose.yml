@@ -296,19 +296,24 @@ services:
     <<: *job
     command:
       - |
-        #pulumi login --local
-        pulumi version
+        echo 1
+        # pulumi install
+        # pulumi login --local
+        # pulumi stack init main
+        # pulumi up -y
     depends_on:
       zitadel:
         condition: service_healthy
     deploy:
       resources:
         limits:
-          memory: 16M
+          memory: 64M
     entrypoint: bash -c
     environment:
       PULUMI_CONFIG_PASSPHRASE_FILE: /run/secrets/pulumi-encryption-password
+      PULUMI_HOME: /state/pulumi/core
       PYTHONDONTWRITEBYTECODE: 1
+      UV_LINK_MODE: copy
     image: pulumi/pulumi-python:3.160.0-debian
     secrets:
       - mode: 0440
