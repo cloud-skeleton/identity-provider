@@ -294,7 +294,7 @@ services:
     <<: *job
     command:
       - |
-        STATE_FILE=/state/pulumi/core/credentials.json
+        STATE_FILE=/root/.pulumi/credentials.json
         mkdir -p "$(dirname "$$STATE_FILE")"
         if [ ! -f "$$STATE_FILE" ]; then
           pulumi install
