@@ -184,8 +184,6 @@ networks:
 secrets:
   postgresql-root-pasword:
     environment: DATABASE_ROOT_USER_PASSWORD
-  pulumi-encryption-password:
-    environment: PULUMI_ENCRYPTION_PASSWORD
   zitadel-master-key:
     environment: MASTER_KEY
 
@@ -309,14 +307,10 @@ services:
           memory: 64M
     entrypoint: bash -c
     environment:
-      PULUMI_CONFIG_PASSPHRASE_FILE: /run/secrets/pulumi-encryption-password
+      PULUMI_CONFIG_PASSPHRASE:
       PYTHONDONTWRITEBYTECODE: 1
       UV_LINK_MODE: copy
     image: pulumi/pulumi-python:3.160.0-debian
-    secrets:
-      - mode: 0440
-        source: pulumi-encryption-password
-        target: /run/secrets/pulumi-encryption-password
     volumes:
       - ./pulumi:/pulumi/projects/identity-provider
       # - ./state:/state
