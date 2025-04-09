@@ -307,7 +307,7 @@ services:
           memory: 64M
     entrypoint: bash -c
     environment:
-      PULUMI_CONFIG_PASSPHRASE:
+      PULUMI_CONFIG_PASSPHRASE: ""
       PYTHONDONTWRITEBYTECODE: 1
       UV_LINK_MODE: copy
     image: pulumi/pulumi-python:3.160.0-debian
