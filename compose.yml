@@ -123,9 +123,6 @@ configs:
             SignatureAlgorithm: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'
           MetadataConfig:
             SignatureAlgorithm: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'
-      SystemAPIUsers:
-        - Cloud Skeleton Automation:
-            Path: /state/keys/cloud-skeleton-automation.public.pem
       SystemDefaults:
         KeyConfig:
           CertificateLifetime: 4320h
@@ -176,6 +173,8 @@ configs:
             Machine:
               Username: cloud.skeleton.iac
               Name: Cloud Skeleton IaC
+            MachineKey:
+              Type: 1
       ...
 
 name: identity-provider
@@ -192,26 +191,6 @@ secrets:
     environment: MASTER_KEY
 
 services:
-  cloud-skeleton-automation-key:
-    <<: *job
-    command:
-      - |
-          STATE_FILE=/state/keys/cloud-skeleton-automation.private.pem
-          mkdir -p "$(dirname "$$STATE_FILE")"
-          if [ ! -f "$$STATE_FILE" ]; then
-            openssl genpkey -algorithm ed25519 -out /state/keys/cloud-skeleton-automation.private.pem
-            openssl pkey -in /state/keys/cloud-skeleton-automation.private.pem \
-              -pubout -out /state/keys/cloud-skeleton-automation.public.pem
-          fi
-    deploy:
-      resources:
-        limits:
-          memory: 16M
-    entrypoint: sh -c
-    image: alpine/openssl:3.3.3
-    volumes:
-      - ./state:/state
-
   postgresql:
     <<: *service
     command: postgres -c config_file=/etc/postgresql/postgresql.conf
@@ -259,8 +238,6 @@ services:
         target: /etc/zitadel/zitadel.yml
         uid: "1000"
     depends_on:
-      cloud-skeleton-automation-key:
-        condition: service_completed_successfully
       zitadel-setup:
         condition: service_completed_successfully
     deploy:

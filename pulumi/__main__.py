@@ -1,4 +1,3 @@
-# import pulumi
-from pulumiverse_zitadel import Provider
+from pulumiverse_zitadel import MachineUser
 
-# Provider()
+MachineUser("testuser", user_name = "testuser", description = "test USER")
