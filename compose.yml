@@ -296,11 +296,10 @@ services:
     <<: *job
     command:
       - |
-        echo 1
-        # pulumi install
-        # pulumi login --local
-        # pulumi stack init main
-        # pulumi up -y
+        pulumi install
+        pulumi login --local
+        pulumi stack init main
+        pulumi up -y
     depends_on:
       zitadel:
         condition: service_healthy
@@ -311,7 +310,6 @@ services:
     entrypoint: bash -c
     environment:
       PULUMI_CONFIG_PASSPHRASE_FILE: /run/secrets/pulumi-encryption-password
-      PULUMI_HOME: /state/pulumi/core
       PYTHONDONTWRITEBYTECODE: 1
       UV_LINK_MODE: copy
     image: pulumi/pulumi-python:3.160.0-debian
@@ -322,6 +320,7 @@ services:
     volumes:
       - ./pulumi:/pulumi/projects/identity-provider
       - ./state:/state
+      - ./state/pulumi/core:/root/.pulumi
     working_dir: /pulumi/projects/identity-provider
 
   zitadel-init:
