@@ -294,10 +294,14 @@ services:
     <<: *job
     command:
       - |
-        pulumi install
-        pulumi login --local
-        pulumi stack init main
-        pulumi up -y
+        STATE_FILE=/state/pulumi/core/credentials.json
+        mkdir -p "$(dirname "$$STATE_FILE")"
+        if [ ! -f "$$STATE_FILE" ]; then
+          pulumi install
+          pulumi login --local
+          pulumi stack init main
+          pulumi up -y
+        fi
     depends_on:
       zitadel:
         condition: service_healthy
