@@ -32,6 +32,16 @@ configs:
       shared_buffers = 16MB
       work_mem = 1MB
 
+  # pulumi:
+  #   content: |
+  #     ---
+  #     config:
+  #       zitadel:domain: zitadel
+  #       zitadel:insecure: true
+  #       zitadel:jwtProfileFile: /state/secrets/zitadel-cloud.skeleton.iac.json
+  #     encryptionsalt: v1:ptfeg6o+DFw=:v1:le9+4G5c9bYKO8Kk:yfngy3D+r6NjxfE9l15sSz/NBMmung==
+  #     ...
+
   zitadel-config:
     content: |
       ---
@@ -312,6 +322,12 @@ services:
           pulumi stack init main
           pulumi up -y
         fi
+    # configs:
+    #   - gid: "1000"
+    #     mode: 0440
+    #     source: pulumi
+    #     target: /pulumi/projects/identity-provider/Pulumi.main.yaml
+    #     uid: "1000"
     depends_on:
       zitadel:
         condition: service_healthy
