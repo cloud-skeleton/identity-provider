@@ -290,7 +290,36 @@ services:
     volumes:
       - ./state:/state
 
-  zitadel-config:
+  zitadel-init:
+    <<: *job
+    command:
+      - |
+          STATE_FILE=/state/zitadel/initialized
+          mkdir -p "$(dirname "$$STATE_FILE")"
+          if [ ! -f "$$STATE_FILE" ]; then
+            zitadel init --config /etc/zitadel/zitadel.yml
+            echo "$(date +%s)" > "$$STATE_FILE"
+          fi
+    configs:
+      - gid: "1000"
+        mode: 0440
+        source: zitadel-config
+        target: /etc/zitadel/zitadel.yml
+        uid: "1000"
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+    entrypoint: sh -c
+    image: ghcr.io/zitadel/zitadel:v2.71.3-debug
+    user: root
+    volumes:
+      - ./state:/state
+
+  zitadel-pulumi:
     <<: *job
     command:
       - |
@@ -321,35 +350,6 @@ services:
       - ./state/pulumi/core:/root/.pulumi
       - ./state/pulumi/venv:/pulumi/projects/identity-provider/.venv
     working_dir: /pulumi/projects/identity-provider
-
-  zitadel-init:
-    <<: *job
-    command:
-      - |
-          STATE_FILE=/state/zitadel/initialized
-          mkdir -p "$(dirname "$$STATE_FILE")"
-          if [ ! -f "$$STATE_FILE" ]; then
-            zitadel init --config /etc/zitadel/zitadel.yml
-            echo "$(date +%s)" > "$$STATE_FILE"
-          fi
-    configs:
-      - gid: "1000"
-        mode: 0440
-        source: zitadel-config
-        target: /etc/zitadel/zitadel.yml
-        uid: "1000"
-    depends_on:
-      postgresql:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          memory: 64M
-    entrypoint: sh -c
-    image: ghcr.io/zitadel/zitadel:v2.71.3-debug
-    user: root
-    volumes:
-      - ./state:/state
 
   zitadel-setup:
     <<: *job
