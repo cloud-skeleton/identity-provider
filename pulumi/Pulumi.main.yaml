@@ -1,3 +1,5 @@
 config:
+  pulumi:disable-default-providers:
+    - '*'
   zitadel:domain: identity.8-2.bijunu.lt
 encryptionsalt: v1:ptfeg6o+DFw=:v1:le9+4G5c9bYKO8Kk:yfngy3D+r6NjxfE9l15sSz/NBMmung==
