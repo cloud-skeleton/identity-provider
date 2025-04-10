@@ -1,0 +1,349 @@
+---
+# @TODO: Needs fully compatible and transparent podman-compose support
+# x-podman:
+#   in_pod: false
+
+# x-templates:
+#   service: &service
+#     healthcheck: &service-healthcheck
+#       interval: 10s
+#       start_interval: 2s
+#       start_period: 10s
+#       timeout: 3s
+#     mem_swappiness: 0
+#     networks:
+#       - identity-provider
+#     restart: unless-stopped
+#     security_opt:
+#       - label:disable
+#     userns_mode: keep-id:uid=0,gid=0
+
+#   job: &job
+#     <<: *service
+#     restart: "no"
+
+configs:
+  # postgresql:
+  #   content: |
+  #     effective_cache_size = 64MB
+  #     listen_addresses = '*'
+  #     maintenance_work_mem = 2MB
+  #     max_connections = 10
+  #     shared_buffers = 16MB
+  #     work_mem = 1MB
+
+  zitadel-config:
+    content: |
+      ---
+      Auth:
+        AmountOfCachedAuthRequests: 1000
+      Caches:
+        Connectors:
+          Memory:
+            Enabled: true
+          Postgres:
+            Enabled: false
+        IdPFormCallbacks:
+          Connector: memory
+        Instance:
+          Connector: memory
+        Milestones:
+          Connector: memory
+        Organization:
+          Connector: memory
+      Console:
+        ShortCache:
+          MaxAge: 1m
+      Database:
+        postgres:
+          Admin:
+            Password: ${DATABASE_ROOT_USER_PASSWORD:?}
+            Username: postgres
+            SSL:
+              Mode: disable
+          Database: zitadel
+          Host: postgresql
+          MaxConnIdleTime: 5m
+          MaxConnLifetime: 1h
+          MaxIdleConns: 2
+          MaxOpenConns: 5
+          Port: 5432
+          User:
+            Password: ${DATABASE_USER_PASSWORD:?}
+            Username: zitadel
+            SSL:
+              Mode: disable
+      DefaultInstance:
+        Features:
+          PermissionCheckV2: true
+        LabelPolicy:
+          HideLoginNameSuffix: true
+        LockoutPolicy:
+          MaxOTPAttempts: 10
+          MaxPasswordAttempts: 10
+        LoginPolicy:
+          AllowExternalIDP: false
+          AllowRegister: false
+          ForceMFA: true
+          PasswordlessType: 0
+        PasswordAgePolicy:
+          ExpireWarnDays: 14
+          MaxAgeDays: 90
+        PasswordComplexityPolicy:
+          MinLength: 15
+        Restrictions:
+          DisallowPublicOrgRegistration: true
+        SMTPConfiguration:
+          SMTP:
+            Host: ${SMTP_SERVER_HOST_NAME:?}:${SMTP_SERVER_PORT:-25}
+            User: ${SMTP_SERVER_USER_NAME:?}
+            Password: ${SMTP_SERVER_USER_PASSWORD:?}
+          From: noreply@${HOST_NAME:?}
+          FromName: Zitadel
+          TLS: ${SMTP_SERVER_ENABLE_TLS:-false}
+        WebKeys:
+          Type: ed25519
+      ExternalDomain: ${HOST_NAME:?}
+      ExternalPort: 443
+      Machine:
+        Identification:
+          PrivateIp:
+            Enabled: false
+          Hostname:
+            Enabled: true
+          Webhook:
+            Enabled: false
+      Metrics:
+        Type: none
+      Notifications:
+        LegacyEnabled: false
+      SAML:
+        ProviderConfig:
+          IDPConfig:
+            SignatureAlgorithm: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'
+          MetadataConfig:
+            SignatureAlgorithm: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'
+      SystemDefaults:
+        KeyConfig:
+          CertificateLifetime: 4320h
+          PrivateKeyLifetime: 1h
+          PublicKeyLifetime: 12h
+          Size: 4096
+        Multifactors:
+          OTP:
+            Issuer:
+        PasswordHasher:
+          Hasher:
+            Algorithm: argon2id
+            Hash: sha512
+        SecretHasher:
+          Hasher:
+            Algorithm: argon2id
+            Hash: sha512
+        SecretGenerators:
+          ApplicationKeySize: 4096
+          MachineKeySize: 4096
+      TLS:
+        Enabled: false
+      ...
+
+  zitadel-init:
+    content: |
+      ---
+      FirstInstance:
+        InstanceName: ${HOST_NAME:?}
+        Org:
+          Name: ${ZITADEL_ORGANIZATION_NAME:?}
+          Human:
+            DisplayName: ${ZITADEL_USER_FIRST_NAME:?} ${ZITADEL_USER_LAST_NAME:?}
+            Email:
+              Address: ${ZITADEL_USER_EMAIL_ADDRESS:?}
+              Verified: true
+            FirstName: ${ZITADEL_USER_FIRST_NAME:?}
+            Gender: ${ZITADEL_USER_GENDER:-}
+            LastName: ${ZITADEL_USER_LAST_NAME:?}
+            NickName: ${ZITADEL_USER_NICK_NAME:-}
+            Password: ${ZITADEL_USER_PASSWORD:?}
+            PasswordChangeRequired: false
+            Phone:
+              Number: ${ZITADEL_USER_PHONE_NUMBER:-}
+              Verified: true
+            UserName: ${ZITADEL_USER_NAME:?}
+          Machine:
+            Machine:
+              Username: cloud.skeleton.iac
+              Name: Cloud Skeleton (IaC)
+            MachineKey:
+              Type: 1
+      ...
+
+# name: identity-provider
+
+# networks:
+#   identity-provider:
+#   proxy_bridge:
+#     external: true
+
+secrets:
+  # postgresql-root-pasword:
+  #   environment: DATABASE_ROOT_USER_PASSWORD
+  zitadel-master-key:
+    environment: MASTER_KEY
+
+services:
+  # postgresql:
+  #   <<: *service
+  #   command: postgres -c config_file=/etc/postgresql/postgresql.conf
+  #   configs:
+  #     - gid: "70"
+  #       mode: 0440
+  #       source: postgresql
+  #       target: /etc/postgresql/postgresql.conf
+  #       uid: "70"
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 128M
+  #   environment:
+  #     POSTGRES_PASSWORD_FILE: /run/secrets/postgresql-root-pasword
+  #   healthcheck:
+  #     <<: *service-healthcheck
+  #     test:
+  #       - CMD
+  #       - pg_isready
+  #       - -d
+  #       - postgres
+  #       - -U
+  #       - postgres
+  #   image: postgres:17.4-alpine3.21
+  #   secrets:
+  #     - gid: "1000"
+  #       mode: 0440
+  #       source: postgresql-root-pasword
+  #       target: /run/secrets/postgresql-root-pasword
+  #       uid: "1000"
+  #   volumes:
+  #     - ./state/postgresql/data:/var/lib/postgresql/data
+
+  zitadel:
+    <<: *service
+    command: >
+      start
+      --config /etc/zitadel/zitadel.yml
+      --masterkeyFile /run/secrets/zitadel-master-key
+    configs:
+      - gid: "1000"
+        mode: 0440
+        source: zitadel-config
+        target: /etc/zitadel/zitadel.yml
+        uid: "1000"
+    depends_on:
+      zitadel-setup:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    healthcheck:
+      <<: *service-healthcheck
+      start_period: 40s
+      test:
+        - CMD
+        - /app/zitadel
+        - ready
+        - --config
+        - /etc/zitadel/zitadel.yml
+    image: ghcr.io/zitadel/zitadel:v2.71.3
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.zitadel.rule=Host("${HOST_NAME:?}")
+      - traefik.http.services.zitadel.loadbalancer.server.port=8080
+      - traefik.http.services.zitadel.loadbalancer.server.scheme=h2c
+    networks:
+      - identity-provider
+      - proxy_bridge
+    secrets:
+      - gid: "1000"
+        mode: 0440
+        source: zitadel-master-key
+        target: /run/secrets/zitadel-master-key
+        uid: "1000"
+    volumes:
+      - ./state:/state
+
+  zitadel-init:
+    <<: *job
+    command:
+      - |
+          STATE_FILE=/state/zitadel/initialized
+          mkdir -p "$(dirname "$$STATE_FILE")"
+          if [ ! -f "$$STATE_FILE" ]; then
+            zitadel init --config /etc/zitadel/zitadel.yml
+            echo "$(date +%s)" > "$$STATE_FILE"
+          fi
+    configs:
+      - gid: "1000"
+        mode: 0440
+        source: zitadel-config
+        target: /etc/zitadel/zitadel.yml
+        uid: "1000"
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+    entrypoint: bash -c
+    image: ghcr.io/zitadel/zitadel:v2.71.3-debug
+    user: root
+    volumes:
+      - ./state:/state
+
+  zitadel-setup:
+    <<: *job
+    command:
+      - |
+          STATE_FILE=/state/zitadel/last-known-version
+          mkdir -p "$(dirname "$$STATE_FILE")"
+          ZITADEL_VERSION_CURRENT="$(zitadel -v)"
+          ZITADEL_VERSION_LAST_KNOWN="$(cat "$$STATE_FILE" 2> /dev/null)"
+          if [ "$$ZITADEL_VERSION_LAST_KNOWN" != "$$ZITADEL_VERSION_CURRENT" ]; then
+            mkdir -p /state/secrets
+            zitadel setup --init-projections=true \
+              --masterkeyFile /run/secrets/zitadel-master-key \
+              --config /etc/zitadel/zitadel.yml \
+              --steps /run/zitadel/init.yml | \
+              tee >(grep --line-buffered -m 1 '"type":"serviceaccount"' > /state/secrets/zitadel-cloud.skeleton.iac.json)
+            echo "$$ZITADEL_VERSION_CURRENT" > "$$STATE_FILE"
+          fi
+    configs:
+      - gid: "1000"
+        mode: 0440
+        source: zitadel-config
+        target: /etc/zitadel/zitadel.yml
+        uid: "1000"
+      - gid: "1000"
+        mode: 0440
+        source: zitadel-init
+        target: /run/zitadel/init.yml
+        uid: "1000"
+    depends_on:
+      zitadel-init:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    entrypoint: bash -c
+    image: ghcr.io/zitadel/zitadel:v2.71.3-debug
+    secrets:
+      - gid: "1000"
+        mode: 0440
+        source: zitadel-master-key
+        target: /run/secrets/zitadel-master-key
+        uid: "1000"
+    user: root
+    volumes:
+      - ./state:/state
+...
