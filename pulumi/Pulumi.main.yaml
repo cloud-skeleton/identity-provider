@@ -1,8 +1,4 @@
----
 config:
-  zitadel:domain: zitadel
-  zitadel:insecure: "true"
-  zitadel:jwtProfileFile: /state/secrets/zitadel-cloud.skeleton.iac.json
-  zitadel:port: 8080
+  pulumi:disable-default-providers:
+    - '*'
 encryptionsalt: v1:ptfeg6o+DFw=:v1:le9+4G5c9bYKO8Kk:yfngy3D+r6NjxfE9l15sSz/NBMmung==
-...
