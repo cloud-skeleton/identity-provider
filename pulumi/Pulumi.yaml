@@ -1,8 +1,0 @@
----
-description: Zitadel configuration
-name: zitadel-config
-runtime:
-  name: python
-  options:
-    toolchain: uv
-...

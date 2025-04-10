@@ -300,40 +300,6 @@ services:
     volumes:
       - ./state:/state
 
-  zitadel-pulumi:
-    <<: *job
-    command:
-      - |
-        STATE_FILE=/root/.pulumi/credentials.json
-        mkdir -p "$(dirname "$$STATE_FILE")"
-        if [ ! -f "$$STATE_FILE" ]; then
-          pulumi install
-          pulumi login --local
-          pulumi stack init main
-          pulumi up -y
-        fi
-    depends_on:
-      zitadel:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-    entrypoint: bash -c
-    environment:
-      PULUMI_CONFIG_PASSPHRASE: ""
-      PYTHONDONTWRITEBYTECODE: 1
-      UV_LINK_MODE: copy
-      ZITADEL_DOMAIN: ${HOST_NAME:?}
-      ZITADEL_JWT_PROFILE_FILE: /state/secrets/zitadel-cloud.skeleton.iac.json
-    image: pulumi/pulumi-python:3.160.0-debian
-    volumes:
-      - ./pulumi:/pulumi/projects/identity-provider
-      - ./state/secrets:/state/secrets
-      - ./state/pulumi/core:/root/.pulumi
-      - ./state/pulumi/venv:/pulumi/projects/identity-provider/.venv
-    working_dir: /pulumi/projects/identity-provider
-
   zitadel-setup:
     <<: *job
     command:
