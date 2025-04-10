@@ -172,7 +172,7 @@ configs:
           Machine:
             Machine:
               Username: cloud.skeleton.iac
-              Name: Cloud Skeleton IaC
+              Name: Cloud Skeleton (IaC)
             MachineKey:
               Type: 1
       ...
