@@ -44,7 +44,7 @@ services:
               --config /etc/zitadel/zitadel.yml \
               --steps /run/zitadel/setup.yml | \
               tee >(grep --line-buffered -m 1 '"type":"serviceaccount"' > "$$ZITADEL_CLOUD_SKELETON_SECRET_TEMP_FILE")
-            if [ -s "$$ZITADEL_CLOUD_SKELETON_SECRET_TEMP_FILE" ]; then fi
+            if [ -s "$$ZITADEL_CLOUD_SKELETON_SECRET_TEMP_FILE" ]; then
               mv -f "$$ZITADEL_CLOUD_SKELETON_SECRET_TEMP_FILE" /state/secrets/zitadel-cloud.skeleton.iac.json
             fi
             echo "$$ZITADEL_VERSION_CURRENT" > "$$ZITADEL_LAST_KNOWN_VERSION_FILE"
