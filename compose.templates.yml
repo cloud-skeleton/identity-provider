@@ -1,12 +1,19 @@
 ---
 services:
   job:
+    deploy:
+      resources:
+        limits:
+          memory: 32M
+    entrypoint: bash -c
     mem_swappiness: 0
     security_opt:
       - label:disable
+    user: root
     userns_mode: keep-id:uid=0,gid=0
 
   service:
+    entrypoint: !reset null
     extends: job
     healthcheck:
       interval: 10s
@@ -14,4 +21,5 @@ services:
       start_period: 10s
       timeout: 3s
     restart: unless-stopped
+    user: !reset null
 ...

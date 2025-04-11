@@ -8,25 +8,25 @@ services:
             zitadel init --config /etc/zitadel/zitadel.yml
             echo "$(date +%s)" > "$$STATE_FILE"
           fi
-    depends_on: !override
+    configs:
+      - gid: "1000"
+        mode: 0440
+        source: zitadel_config
+        target: /etc/zitadel/zitadel.yml
+        uid: "1000"
+    depends_on:
       postgresql:
         condition: service_healthy
     deploy:
       resources:
         limits:
           memory: 64M
-    entrypoint: bash -c
     extends:
-      file: compose.service.zitadel.yml
-      service: zitadel
-    healthcheck:
-      test: !reset null
+      file: compose.templates.yml
+      service: job
     image: ghcr.io/zitadel/zitadel:v2.71.3-debug
-    labels: !reset []
-    networks: !override
+    networks:
       - identity_provider
-    restart: no
-    user: root
     volumes:
       - ./state/zitadel:/state/zitadel
 ...

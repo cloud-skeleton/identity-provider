@@ -61,6 +61,11 @@ services:
     extends:
       file: compose.service.zitadel-init.yml
       service: zitadel_init
+    secrets:
+      - gid: "1000"
+        mode: 0440
+        source: zitadel_master_key
+        uid: "1000"
     volumes:
       - ./state/secrets:/state/secrets
 ...
