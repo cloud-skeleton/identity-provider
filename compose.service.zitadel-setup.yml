@@ -39,7 +39,7 @@ services:
           ZITADEL_VERSION_LAST_KNOWN="$(cat "$$STATE_FILE" 2> /dev/null)"
           if [ "$$ZITADEL_VERSION_LAST_KNOWN" != "$$ZITADEL_VERSION_CURRENT" ]; then
             zitadel setup --init-projections=true \
-              --masterkeyFile /run/secrets/zitadel-master-key \
+              --masterkeyFile /run/secrets/zitadel_master_key \
               --config /etc/zitadel/zitadel.yml \
               --steps /run/zitadel/setup.yml | \
               tee >(grep --line-buffered -m 1 '"type":"serviceaccount"' > /state/secrets/zitadel-cloud.skeleton.iac.json)
