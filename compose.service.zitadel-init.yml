@@ -3,10 +3,10 @@ services:
   zitadel_init:
     command:
       - |
-          STATE_FILE=/state/zitadel/initialized
-          if [ ! -f "$$STATE_FILE" ]; then
+          ZITADEL_MASTER_KEY_FILE=/state/secrets/zitadel-master-key.txt
+          if [ ! -f "$$ZITADEL_MASTER_KEY_FILE" ]; then
+            tr -dc A-Za-z0-9 < /dev/urandom | head -c 32 > "$$ZITADEL_MASTER_KEY_FILE"
             zitadel init --config /etc/zitadel/zitadel.yml
-            echo "$(date +%s)" > "$$STATE_FILE"
           fi
     configs:
       - gid: "1000"
@@ -28,5 +28,5 @@ services:
     networks:
       - identity_provider
     volumes:
-      - ./state/zitadel:/state/zitadel
+      - ./state/secrets:/state/secrets
 ...

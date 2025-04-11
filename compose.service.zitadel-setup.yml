@@ -34,16 +34,12 @@ services:
   zitadel_setup:
     command:
       - |
-          ZITADEL_MASTER_KEY_FILE=/state/secrets/zitadel-master-key.txt
-          if [ ! -f "$$ZITADEL_MASTER_KEY_FILE" ]; then
-            tr -dc A-Za-z0-9 < /dev/urandom | head -c 32 > "$$ZITADEL_MASTER_KEY_FILE"
-          fi
           STATE_FILE=/state/zitadel/last-known-version
           ZITADEL_VERSION_CURRENT="$(zitadel -v)"
           ZITADEL_VERSION_LAST_KNOWN="$(cat "$$STATE_FILE" 2> /dev/null)"
           if [ "$$ZITADEL_VERSION_LAST_KNOWN" != "$$ZITADEL_VERSION_CURRENT" ]; then
             zitadel setup --init-projections=true \
-              --masterkeyFile "$$ZITADEL_MASTER_KEY_FILE" \
+              --masterkeyFile /state/secrets/zitadel-master-key.txt \
               --config /etc/zitadel/zitadel.yml \
               --steps /run/zitadel/setup.yml | \
               tee >(grep --line-buffered -m 1 '"type":"serviceaccount"' > /state/secrets/zitadel-cloud.skeleton.iac.json)
