@@ -4,7 +4,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 32M
+          memory: 128M
     entrypoint: bash -c
     mem_swappiness: 0
     security_opt:

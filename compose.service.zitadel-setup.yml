@@ -54,10 +54,6 @@ services:
     depends_on: !override
       zitadel_init:
         condition: service_completed_successfully
-    deploy:
-      resources:
-        limits:
-          memory: 128M
     extends:
       file: compose.service.zitadel-init.yml
       service: zitadel_init

@@ -22,10 +22,6 @@ services:
         source: postgresql
         target: /etc/postgresql/postgresql.conf
         uid: "70"
-    deploy:
-      resources:
-        limits:
-          memory: 128M
     environment:
       POSTGRES_PASSWORD_FILE: /run/secrets/postgresql_root_pasword
     extends:
