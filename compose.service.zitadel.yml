@@ -115,16 +115,12 @@ configs:
         Enabled: false
       ...
 
-secrets:
-  zitadel_master_key:
-    environment: MASTER_KEY
-
 services:
   zitadel:
     command: >
       start
       --config /etc/zitadel/zitadel.yml
-      --masterkeyFile /run/secrets/zitadel_master_key
+      --masterkeyFile /state/secrets/zitadel-master-key.txt
     configs:
       - gid: "1000"
         mode: 0440
@@ -158,9 +154,6 @@ services:
     networks:
       - identity_provider
       - proxy_bridge
-    secrets:
-      - gid: "1000"
-        mode: 0440
-        source: zitadel_master_key
-        uid: "1000"
+    volumes:
+      - ./state/secrets:/state/secrets
 ...
