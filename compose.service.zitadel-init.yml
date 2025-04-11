@@ -16,7 +16,9 @@ services:
         limits:
           memory: 64M
     entrypoint: bash -c
-    extends: zitadel
+    extends:
+      file: compose.service.zitadel.yml
+      service: zitadel
     healthcheck:
       test: !reset null
     image: ghcr.io/zitadel/zitadel:v2.71.3-debug
