@@ -119,8 +119,8 @@ services:
   zitadel:
     command: >
       start
-      --config "$$ZITADEL_CONFIG_FILE"
-      --masterkeyFile "$$ZITADEL_MASTER_KEY_FILE"
+      --config "$ZITADEL_CONFIG_FILE"
+      --masterkeyFile "$ZITADEL_MASTER_KEY_FILE"
     configs:
       - gid: "1000"
         mode: 0440
