@@ -58,9 +58,7 @@ services:
       resources:
         limits:
           memory: 128M
-    extends:
-      file: compose.service.zitadel-init.yml
-      service: zitadel_init
+    extends: zitadel_init
     volumes:
       - ./state/secrets:/state/secrets
 ...
