@@ -6,6 +6,8 @@ services:
           ZITADEL_MASTER_KEY_FILE=/state/secrets/zitadel-master-key.txt
           if [ ! -f "$$ZITADEL_MASTER_KEY_FILE" ]; then
             tr -dc A-Za-z0-9 < /dev/urandom | head -c 32 > "$$ZITADEL_MASTER_KEY_FILE"
+            chmod 0400 "$$ZITADEL_MASTER_KEY_FILE"
+            chown 1000:1000 "$$ZITADEL_MASTER_KEY_FILE"
             zitadel init --config /etc/zitadel/zitadel.yml
           fi
     configs:
