@@ -40,6 +40,8 @@ services:
         - -U
         - postgres
     image: postgres:17.4-alpine3.21
+    networks:
+      - identity_provider
     secrets:
       - gid: "1000"
         mode: 0440

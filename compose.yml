@@ -1,11 +1,12 @@
 ---
 include:
   - compose.service.postgresql.yml
+  - compose.service.zitadel-init.yml
 
-name: identity-provider
+name: identity_provider
 
 networks:
-  identity-provider:
+  identity_provider:
   proxy_bridge:
     external: true
 

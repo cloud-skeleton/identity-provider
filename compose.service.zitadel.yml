@@ -1,0 +1,166 @@
+---
+configs:
+  zitadel_config:
+    content: |
+      ---
+      Auth:
+        AmountOfCachedAuthRequests: 1000
+      Caches:
+        Connectors:
+          Memory:
+            Enabled: true
+          Postgres:
+            Enabled: false
+        IdPFormCallbacks:
+          Connector: memory
+        Instance:
+          Connector: memory
+        Milestones:
+          Connector: memory
+        Organization:
+          Connector: memory
+      Console:
+        ShortCache:
+          MaxAge: 1m
+      Database:
+        postgres:
+          Admin:
+            Password: ${DATABASE_ROOT_USER_PASSWORD:?}
+            Username: postgres
+            SSL:
+              Mode: disable
+          Database: zitadel
+          Host: postgresql
+          MaxConnIdleTime: 5m
+          MaxConnLifetime: 1h
+          MaxIdleConns: 2
+          MaxOpenConns: 5
+          Port: 5432
+          User:
+            Password: ${DATABASE_USER_PASSWORD:?}
+            Username: zitadel
+            SSL:
+              Mode: disable
+      DefaultInstance:
+        Features:
+          PermissionCheckV2: true
+        LabelPolicy:
+          HideLoginNameSuffix: true
+        LockoutPolicy:
+          MaxOTPAttempts: 10
+          MaxPasswordAttempts: 10
+        LoginPolicy:
+          AllowExternalIDP: false
+          AllowRegister: false
+          ForceMFA: true
+          PasswordlessType: 0
+        PasswordAgePolicy:
+          ExpireWarnDays: 14
+          MaxAgeDays: 90
+        PasswordComplexityPolicy:
+          MinLength: 15
+        Restrictions:
+          DisallowPublicOrgRegistration: true
+        SMTPConfiguration:
+          SMTP:
+            Host: ${SMTP_SERVER_HOST_NAME:?}:${SMTP_SERVER_PORT:-25}
+            User: ${SMTP_SERVER_USER_NAME:?}
+            Password: ${SMTP_SERVER_USER_PASSWORD:?}
+          From: noreply@${HOST_NAME:?}
+          FromName: Zitadel
+          TLS: ${SMTP_SERVER_ENABLE_TLS:-false}
+        WebKeys:
+          Type: ed25519
+      ExternalDomain: ${HOST_NAME:?}
+      ExternalPort: 443
+      Machine:
+        Identification:
+          PrivateIp:
+            Enabled: false
+          Hostname:
+            Enabled: true
+          Webhook:
+            Enabled: false
+      Metrics:
+        Type: none
+      Notifications:
+        LegacyEnabled: false
+      SAML:
+        ProviderConfig:
+          IDPConfig:
+            SignatureAlgorithm: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'
+          MetadataConfig:
+            SignatureAlgorithm: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'
+      SystemDefaults:
+        KeyConfig:
+          CertificateLifetime: 4320h
+          PrivateKeyLifetime: 1h
+          PublicKeyLifetime: 12h
+          Size: 4096
+        Multifactors:
+          OTP:
+            Issuer:
+        PasswordHasher:
+          Hasher:
+            Algorithm: argon2id
+            Hash: sha512
+        SecretHasher:
+          Hasher:
+            Algorithm: argon2id
+            Hash: sha512
+        SecretGenerators:
+          ApplicationKeySize: 4096
+          MachineKeySize: 4096
+      TLS:
+        Enabled: false
+      ...
+
+secrets:
+  zitadel_master_key:
+    environment: MASTER_KEY
+
+services:
+  zitadel:
+    command: >
+      start
+      --config /etc/zitadel/zitadel.yml
+      --masterkeyFile /run/secrets/zitadel_master_key
+    configs:
+      - gid: "1000"
+        mode: 0440
+        source: zitadel_config
+        target: /etc/zitadel/zitadel.yml
+        uid: "1000"
+    depends_on:
+      zitadel_setup:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    extends:
+      file: compose.templates.yml
+      service: service
+    healthcheck:
+      start_period: 40s
+      test:
+        - CMD
+        - /app/zitadel
+        - ready
+        - --config
+        - /etc/zitadel/zitadel.yml
+    image: ghcr.io/zitadel/zitadel:v2.71.3
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.zitadel.rule=Host("${HOST_NAME:?}")
+      - traefik.http.services.zitadel.loadbalancer.server.port=8080
+      - traefik.http.services.zitadel.loadbalancer.server.scheme=h2c
+    networks:
+      - identity_provider
+      - proxy_bridge
+    secrets:
+      - gid: "1000"
+        mode: 0440
+        source: zitadel_master_key
+        uid: "1000"
+...
