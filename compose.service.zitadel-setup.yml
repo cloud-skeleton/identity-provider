@@ -34,13 +34,15 @@ services:
   zitadel_setup:
     command:
       - |
+          ZITADEL_LAST_KNOWN_VERSION_FILE=/state/zitadel/last_known_version
+          ZITADEL_CLOUD_SKELETON_SECRET_FILE=/state/secrets/zitadel-cloud.skeleton.iac.json
           ZITADEL_VERSION_CURRENT="$(zitadel -v)"
           ZITADEL_VERSION_LAST_KNOWN="$(cat "$$ZITADEL_LAST_KNOWN_VERSION_FILE" 2> /dev/null)"
           if [ "$$ZITADEL_VERSION_LAST_KNOWN" != "$$ZITADEL_VERSION_CURRENT" ]; then
             zitadel setup --init-projections=true \
-              --masterkeyFile "$$ZITADEL_MASTER_KEY_FILE" \
-              --config "$$ZITADEL_CONFIG_FILE" \
-              --steps "$$ZITADEL_CONFIG_SETUP_FILE" | \
+              --masterkeyFile /state/secrets/zitadel-master-key.txt \
+              --config /etc/zitadel/zitadel.yml \
+              --steps /run/zitadel/setup.yml | \
               tee >(grep --line-buffered -m 1 '"type":"serviceaccount"' > "$$ZITADEL_CLOUD_SKELETON_SECRET_FILE")
             echo "$$ZITADEL_VERSION_CURRENT" > "$$ZITADEL_LAST_KNOWN_VERSION_FILE"
           fi
@@ -53,12 +55,6 @@ services:
     depends_on: !override
       zitadel_init:
         condition: service_completed_successfully
-    environment:
-      ZITADEL_CLOUD_SKELETON_SECRET_FILE: /state/secrets/zitadel-cloud.skeleton.iac.json
-      ZITADEL_CONFIG_FILE: /etc/zitadel/zitadel.yml
-      ZITADEL_CONFIG_SETUP_FILE: /run/zitadel/setup.yml
-      ZITADEL_LAST_KNOWN_VERSION_FILE: /state/zitadel/last_known_version
-      ZITADEL_MASTER_KEY_FILE: /state/secrets/zitadel-master-key.txt
     extends:
       file: compose.service.zitadel-init.yml
       service: zitadel_init

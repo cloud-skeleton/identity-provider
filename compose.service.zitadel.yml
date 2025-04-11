@@ -119,8 +119,8 @@ services:
   zitadel:
     command: >
       start
-      --config "$ZITADEL_CONFIG_FILE"
-      --masterkeyFile "$ZITADEL_MASTER_KEY_FILE"
+      --config /etc/zitadel/zitadel.yml
+      --masterkeyFile /state/secrets/zitadel-master-key.txt
     configs:
       - gid: "1000"
         mode: 0440
@@ -134,9 +134,6 @@ services:
       resources:
         limits:
           memory: 256M
-    environment:
-      ZITADEL_CONFIG_FILE: /etc/zitadel/zitadel.yml
-      ZITADEL_MASTER_KEY_FILE: /state/secrets/zitadel-master-key.txt
     extends:
       file: compose.templates.yml
       service: service

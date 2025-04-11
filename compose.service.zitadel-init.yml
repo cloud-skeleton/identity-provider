@@ -3,9 +3,10 @@ services:
   zitadel_init:
     command:
       - |
+          ZITADEL_MASTER_KEY_FILE=/state/secrets/zitadel-master-key.txt
           if [ ! -f "$$ZITADEL_MASTER_KEY_FILE" ]; then
             tr -dc A-Za-z0-9 < /dev/urandom | head -c 32 > "$$ZITADEL_MASTER_KEY_FILE"
-            zitadel init --config "$$ZITADEL_CONFIG_FILE"
+            zitadel init --config /etc/zitadel/zitadel.yml
           fi
     configs:
       - gid: "1000"
@@ -20,9 +21,6 @@ services:
       resources:
         limits:
           memory: 64M
-    environment:
-      ZITADEL_CONFIG_FILE: /etc/zitadel/zitadel.yml
-      ZITADEL_MASTER_KEY_FILE: /state/secrets/zitadel-master-key.txt
     extends:
       file: compose.templates.yml
       service: job
