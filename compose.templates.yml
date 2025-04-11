@@ -1,13 +1,13 @@
 ---
 services:
-  job: &job
+  job:
     mem_swappiness: 0
     security_opt:
       - label:disable
     userns_mode: keep-id:uid=0,gid=0
 
   service:
-    <<: *job
+    extends: job
     healthcheck:
       interval: 10s
       start_interval: 2s

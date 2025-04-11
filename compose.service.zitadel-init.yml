@@ -4,7 +4,6 @@ services:
     command:
       - |
           STATE_FILE=/state/zitadel/initialized
-          mkdir -p "$(dirname "$$STATE_FILE")"
           if [ ! -f "$$STATE_FILE" ]; then
             zitadel init --config /etc/zitadel/zitadel.yml
             echo "$(date +%s)" > "$$STATE_FILE"
@@ -29,5 +28,5 @@ services:
     restart: no
     user: root
     volumes:
-      - ./state:/state
+      - ./state/zitadel:/state/zitadel
 ...
