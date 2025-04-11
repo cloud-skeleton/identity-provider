@@ -9,7 +9,7 @@ services:
             zitadel init --config /etc/zitadel/zitadel.yml
             echo "$(date +%s)" > "$$STATE_FILE"
           fi
-    depends_on:
+    depends_on: !override
       postgresql:
         condition: service_healthy
     deploy:
