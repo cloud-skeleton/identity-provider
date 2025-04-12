@@ -1,0 +1,284 @@
+---
+configs:
+  zitadel_config:
+    content: |
+      ---
+      Auth:
+        AmountOfCachedAuthRequests: 1000
+      Caches:
+        Connectors:
+          Memory:
+            Enabled: true
+          Postgres:
+            Enabled: false
+        IdPFormCallbacks:
+          Connector: memory
+        Instance:
+          Connector: memory
+        Milestones:
+          Connector: memory
+        Organization:
+          Connector: memory
+      Console:
+        ShortCache:
+          MaxAge: 1m
+      Database:
+        postgres:
+          Admin:
+            Username: postgres
+            SSL:
+              Mode: disable
+          Database: zitadel
+          Host: postgresql
+          MaxConnIdleTime: 5m
+          MaxConnLifetime: 1h
+          MaxIdleConns: 2
+          MaxOpenConns: 5
+          Port: 5432
+          User:
+            Username: zitadel
+            SSL:
+              Mode: disable
+      DefaultInstance:
+        Features:
+          PermissionCheckV2: true
+        LabelPolicy:
+          HideLoginNameSuffix: true
+        LockoutPolicy:
+          MaxOTPAttempts: 10
+          MaxPasswordAttempts: 10
+        LoginPolicy:
+          AllowExternalIDP: false
+          AllowRegister: false
+          ForceMFA: true
+          PasswordlessType: 0
+        PasswordAgePolicy:
+          ExpireWarnDays: 14
+          MaxAgeDays: 90
+        PasswordComplexityPolicy:
+          MinLength: 15
+        Restrictions:
+          DisallowPublicOrgRegistration: true
+        SMTPConfiguration:
+          SMTP:
+            Host: ${SMTP_SERVER_HOST_NAME:?}:${SMTP_SERVER_PORT:-25}
+            User: ${SMTP_SERVER_USER_NAME:?}
+            Password: ${SMTP_SERVER_USER_PASSWORD:?}
+          From: noreply@${HOST_NAME:?}
+          FromName: Zitadel
+          TLS: ${SMTP_SERVER_ENABLE_TLS:-false}
+        WebKeys:
+          Type: ed25519
+      ExternalDomain: ${HOST_NAME:?}
+      ExternalPort: 443
+      Machine:
+        Identification:
+          PrivateIp:
+            Enabled: false
+          Hostname:
+            Enabled: true
+          Webhook:
+            Enabled: false
+      Metrics:
+        Type: none
+      Notifications:
+        LegacyEnabled: false
+      SAML:
+        ProviderConfig:
+          IDPConfig:
+            SignatureAlgorithm: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'
+          MetadataConfig:
+            SignatureAlgorithm: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'
+      SystemDefaults:
+        KeyConfig:
+          CertificateLifetime: 4320h
+          PrivateKeyLifetime: 1h
+          PublicKeyLifetime: 12h
+          Size: 4096
+        Multifactors:
+          OTP:
+            Issuer:
+        PasswordHasher:
+          Hasher:
+            Algorithm: argon2id
+            Hash: sha512
+        SecretHasher:
+          Hasher:
+            Algorithm: argon2id
+            Hash: sha512
+        SecretGenerators:
+          ApplicationKeySize: 4096
+          MachineKeySize: 4096
+      TLS:
+        Enabled: false
+      ...
+
+  zitadel_setup_config:
+    content: |
+      ---
+      FirstInstance:
+        InstanceName: ${HOST_NAME:?}
+        Org:
+          Name: ${ZITADEL_ORGANIZATION_NAME:?}
+          Human:
+            DisplayName: ${ZITADEL_USER_FIRST_NAME:?} ${ZITADEL_USER_LAST_NAME:?}
+            Email:
+              Address: ${ZITADEL_USER_EMAIL_ADDRESS:?}
+              Verified: true
+            FirstName: ${ZITADEL_USER_FIRST_NAME:?}
+            Gender: ${ZITADEL_USER_GENDER:-}
+            LastName: ${ZITADEL_USER_LAST_NAME:?}
+            NickName: ${ZITADEL_USER_NICK_NAME:-}
+            Password: ${ZITADEL_USER_PASSWORD:?}
+            PasswordChangeRequired: false
+            Phone:
+              Number: ${ZITADEL_USER_PHONE_NUMBER:-}
+              Verified: true
+            UserName: ${ZITADEL_USER_NAME:?}
+          Machine:
+            Machine:
+              Username: cloud.skeleton.iac
+              Name: Cloud Skeleton (IaC)
+            MachineKey:
+              Type: 1
+      ...
+
+services:
+  zitadel:
+    command: >
+      start
+      --config /etc/zitadel/zitadel.yml
+      --config /state/secrets/zitadel-database-user-password.yml
+      --masterkeyFile /state/secrets/zitadel-master-key.txt
+    configs:
+      - gid: "1000"
+        mode: 0440
+        source: zitadel_config
+        target: /etc/zitadel/zitadel.yml
+        uid: "1000"
+    depends_on:
+      zitadel_setup:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    extends:
+      file: compose.templates.yml
+      service: service
+    healthcheck:
+      start_period: 40s
+      test:
+        - CMD
+        - /app/zitadel
+        - ready
+        - --config
+        - /etc/zitadel/zitadel.yml
+    image: ghcr.io/zitadel/zitadel:v2.71.7
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.zitadel.rule=Host("${HOST_NAME:?}")
+      - traefik.http.services.zitadel.loadbalancer.server.port=8080
+      - traefik.http.services.zitadel.loadbalancer.server.scheme=h2c
+    networks:
+      - identity_provider
+      - proxy_bridge
+    volumes:
+      - ./state/secrets:/state/secrets
+
+  zitadel_init:
+    command:
+      - |
+          ZITADEL_DATABASE_ADMIN_USER_PASSWORD_FILE=/state/secrets/zitadel-database-admin-user-password.yml
+          if [ ! -f "$$ZITADEL_DATABASE_ADMIN_USER_PASSWORD_FILE" ]; then
+          cat << EOF > "$$ZITADEL_DATABASE_ADMIN_USER_PASSWORD_FILE"
+          ---
+          Database:
+            postgres:
+              Admin:
+                Password: $(< /state/secrets/postgresql-root-user-password.txt)
+          ...
+          EOF
+          chmod 0400 "$$ZITADEL_DATABASE_ADMIN_USER_PASSWORD_FILE"
+          chown 1000:1000 "$$ZITADEL_DATABASE_ADMIN_USER_PASSWORD_FILE"
+          fi
+          ZITADEL_DATABASE_USER_PASSWORD_FILE=/state/secrets/zitadel-database-user-password.yml
+          if [ ! -f "$$ZITADEL_DATABASE_USER_PASSWORD_FILE" ]; then
+          cat << EOF > "$$ZITADEL_DATABASE_USER_PASSWORD_FILE"
+          ---
+          Database:
+            postgres:
+              User:
+                Password: $(tr -dc A-Za-z0-9 < /dev/urandom | head -c 32)
+          ...
+          EOF
+          chmod 0400 "$$ZITADEL_DATABASE_USER_PASSWORD_FILE"
+          chown 1000:1000 "$$ZITADEL_DATABASE_USER_PASSWORD_FILE"
+          fi
+          ZITADEL_MASTER_KEY_FILE=/state/secrets/zitadel-master-key.txt
+          if [ ! -f "$$ZITADEL_MASTER_KEY_FILE" ]; then
+            tr -dc A-Za-z0-9 < /dev/urandom | head -c 32 > "$$ZITADEL_MASTER_KEY_FILE"
+            chmod 0400 "$$ZITADEL_MASTER_KEY_FILE"
+            chown 1000:1000 "$$ZITADEL_MASTER_KEY_FILE"
+            zitadel init --config /etc/zitadel/zitadel.yml \
+              --config "$$ZITADEL_DATABASE_ADMIN_USER_PASSWORD_FILE" \
+              --config "$$ZITADEL_DATABASE_USER_PASSWORD_FILE"
+          fi
+    configs:
+      - gid: "1000"
+        mode: 0440
+        source: zitadel_config
+        target: /etc/zitadel/zitadel.yml
+        uid: "1000"
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+    extends:
+      file: compose.templates.yml
+      service: job
+    image: ghcr.io/zitadel/zitadel:v2.71.7-debug
+    networks:
+      - identity_provider
+    volumes:
+      - ./state/secrets:/state/secrets
+
+  zitadel_setup:
+    command:
+      - |
+          ZITADEL_LAST_KNOWN_VERSION_FILE=/state/zitadel/last_known_version
+          ZITADEL_VERSION_CURRENT="$(zitadel -v)"
+          ZITADEL_VERSION_LAST_KNOWN="$(cat "$$ZITADEL_LAST_KNOWN_VERSION_FILE" 2> /dev/null)"
+          if [ "$$ZITADEL_VERSION_LAST_KNOWN" != "$$ZITADEL_VERSION_CURRENT" ]; then
+            ZITADEL_CLOUD_SKELETON_SECRET_TEMP_FILE="$(mktemp)"
+            zitadel setup --init-projections=true \
+              --masterkeyFile /state/secrets/zitadel-master-key.txt \
+              --config /etc/zitadel/zitadel.yml \
+              --config /state/secrets/zitadel-database-user-password.yml \
+              --steps /run/zitadel/setup.yml | \
+              tee >(grep --line-buffered -m 1 '"type":"serviceaccount"' > "$$ZITADEL_CLOUD_SKELETON_SECRET_TEMP_FILE")
+            if [ -s "$$ZITADEL_CLOUD_SKELETON_SECRET_TEMP_FILE" ]; then
+              ZITADEL_CLOUD_SKELETON_SECRET_FILE=/state/secrets/zitadel-system-user-cloud.skeleton.iac.json
+              mv -f "$$ZITADEL_CLOUD_SKELETON_SECRET_TEMP_FILE" "$$ZITADEL_CLOUD_SKELETON_SECRET_FILE"
+              chmod 0400 "$$ZITADEL_CLOUD_SKELETON_SECRET_FILE"
+              chown 1000:1000 "$$ZITADEL_CLOUD_SKELETON_SECRET_FILE"
+            fi
+            echo "$$ZITADEL_VERSION_CURRENT" > "$$ZITADEL_LAST_KNOWN_VERSION_FILE"
+          fi
+    configs:
+      - gid: "1000"
+        mode: 0440
+        source: zitadel_setup_config
+        target: /run/zitadel/setup.yml
+        uid: "1000"
+    depends_on:
+      zitadel_init:
+        condition: service_completed_successfully
+    extends: zitadel_init
+    volumes:
+      - ./state/secrets:/state/secrets
+      - ./state/zitadel:/state/zitadel
+...

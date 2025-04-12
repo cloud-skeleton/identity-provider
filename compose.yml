@@ -1,0 +1,15 @@
+---
+include:
+  - compose-postgresql.yml
+  - compose-zitadel.yml
+
+name: identity_provider
+
+networks:
+  identity_provider:
+  proxy_bridge:
+    external: true
+
+x-podman:
+  in_pod: false
+...
