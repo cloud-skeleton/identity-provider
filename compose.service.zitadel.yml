@@ -174,8 +174,6 @@ services:
         - ready
         - --config
         - /etc/zitadel/zitadel.yml
-        - --config
-        - /state/secrets/zitadel-database-credentials.yml
     image: ghcr.io/zitadel/zitadel:v2.71.3
     labels:
       - traefik.enable=true
@@ -242,7 +240,6 @@ services:
             zitadel setup --init-projections=true \
               --masterkeyFile /state/secrets/zitadel-master-key.txt \
               --config /etc/zitadel/zitadel.yml \
-              --config /state/secrets/zitadel-database-credentials.yml \
               --steps /run/zitadel/setup.yml | \
               tee >(grep --line-buffered -m 1 '"type":"serviceaccount"' > "$$ZITADEL_CLOUD_SKELETON_SECRET_TEMP_FILE")
             if [ -s "$$ZITADEL_CLOUD_SKELETON_SECRET_TEMP_FILE" ]; then
