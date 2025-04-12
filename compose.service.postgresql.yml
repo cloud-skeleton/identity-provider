@@ -1,0 +1,48 @@
+---
+configs:
+  postgresql:
+    content: |
+      effective_cache_size = 64MB
+      listen_addresses = '*'
+      maintenance_work_mem = 2MB
+      max_connections = 10
+      shared_buffers = 16MB
+      work_mem = 1MB
+
+secrets:
+  postgresql_root_pasword:
+    environment: DATABASE_ROOT_USER_PASSWORD
+
+services:
+  postgresql:
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    configs:
+      - gid: "70"
+        mode: 0440
+        source: postgresql
+        target: /etc/postgresql/postgresql.conf
+        uid: "70"
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgresql_root_pasword
+    extends:
+      file: compose.templates.yml
+      service: service
+    healthcheck:
+      test:
+        - CMD
+        - pg_isready
+        - -d
+        - postgres
+        - -U
+        - postgres
+    image: postgres:17.4-alpine3.21
+    networks:
+      - identity_provider
+    secrets:
+      - gid: "1000"
+        mode: 0440
+        source: postgresql_root_pasword
+        uid: "1000"
+    volumes:
+      - ./state/postgresql/data:/var/lib/postgresql/data
+...
