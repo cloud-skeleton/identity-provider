@@ -148,6 +148,7 @@ services:
     command: >
       start
       --config /etc/zitadel/zitadel.yml
+      --config /state/secrets/zitadel-database-user-password.yml
       --masterkeyFile /state/secrets/zitadel-master-key.txt
     configs:
       - gid: "1000"
@@ -171,10 +172,6 @@ services:
         - CMD
         - /app/zitadel
         - ready
-        - --config
-        - /etc/zitadel/zitadel.yml
-        - --config
-        - /state/secrets/zitadel-database-user-password.yml
     image: ghcr.io/zitadel/zitadel:v2.71.3
     labels:
       - traefik.enable=true
@@ -223,7 +220,6 @@ services:
             chown 1000:1000 "$$ZITADEL_MASTER_KEY_FILE"
             zitadel init --config /etc/zitadel/zitadel.yml \
               --config "$$ZITADEL_DATABASE_ADMIN_USER_PASSWORD_FILE" \
-              --config "$$ZITADEL_DATABASE_USER_PASSWORD_FILE" \
               --config "$$ZITADEL_DATABASE_USER_PASSWORD_FILE"
           fi
     configs:
