@@ -173,6 +173,7 @@ services:
         - /app/zitadel
         - ready
         - --config /etc/zitadel/zitadel.yml
+        - --config /state/secrets/zitadel-database-user-password.yml
     image: ghcr.io/zitadel/zitadel:v2.71.3
     labels:
       - traefik.enable=true
