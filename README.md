@@ -11,7 +11,7 @@
 ## Overview
 
 The **[Identity Provider](https://github.com/cloud-skeleton/identity-provider/)** stack deploys **[ZITADEL](https://zitadel.com/docs/guides/start/quickstart)**, a modern identity provider written in Go and powered by **[PostgreSQL](https://www.postgresql.org/docs/current/index.html)**. It offers features such as:
-- OAuth2 and OpenID Connect support.
+- **[OAuth2](https://oauth.net/getting-started/)** and **[OpenID Connect](https://openid.net/developers/how-connect-works/)** support.
 - Passwordless login.
 - Self-hosted identity federation.
 
@@ -30,56 +30,90 @@ This stack deploys two main services defined in `compose.yml`:
 
 The deployment is configured using environment variables defined in the `.env` file:
 
-- **ZITADEL_DATABASE_USER**  
-  *Description:* **[PostgreSQL](https://www.postgresql.org/docs/current/index.html)** user name for **[ZITADEL](https://zitadel.com/docs/guides/start/quickstart)** database access.  
+- **HOST_NAME**  
+  *Description:* The hostname for the **[ZITADEL](https://zitadel.com/docs/guides/start/quickstart)** service.  
   *Example:*  
   ```env
-  ZITADEL_DATABASE_USER=zitadel_user
+  HOST_NAME=identity.example.com
   ```
 
-- **ZITADEL_DATABASE_PASSWORD**  
-  *Description:* Password for the database user.  
-  *Example:*  
-  ```env
-  ZITADEL_DATABASE_PASSWORD=secretpassword
-  ```
-
-- **ZITADEL_DATABASE_HOST**  
-  *Description:* Hostname of the **[PostgreSQL](https://www.postgresql.org/docs/current/index.html)** service.  
-  *Default:* `postgres`  
-  *Example:*  
-  ```env
-  ZITADEL_DATABASE_HOST=postgres
-  ```
-
-- **ZITADEL_DATABASE_PORT**  
-  *Description:* Port on which the **[PostgreSQL](https://www.postgresql.org/docs/current/index.html)** server is listening.  
-  *Default:* `5432`  
-  *Example:*  
-  ```env
-  ZITADEL_DATABASE_PORT=5432
-  ```
-
-- **ZITADEL_DATABASE_NAME**  
-  *Description:* Name of the database to use.  
-  *Example:*  
-  ```env
-  ZITADEL_DATABASE_NAME=zitadel
-  ```
-
-- **ZITADEL_EXTERN_URL**  
-  *Description:* Public URL under which **[ZITADEL](https://zitadel.com/docs/guides/start/quickstart)** will be reachable.  
-  *Example:*  
-  ```env
-  ZITADEL_EXTERN_URL=https://id.example.com
-  ```
-
-- **ZITADEL_TLS_ENABLED**  
-  *Description:* Whether **[ZITADEL](https://zitadel.com/docs/guides/start/quickstart)** should use TLS internally.  
+- **SMTP_SERVER_ENABLE_TLS**  
+  *Description:* Whether to use TLS when connecting to the SMTP server.  
   *Default:* `false`  
   *Example:*  
   ```env
-  ZITADEL_TLS_ENABLED=false
+  SMTP_SERVER_ENABLE_TLS=true
+  ```
+
+- **SMTP_SERVER_HOST_NAME**  
+  *Description:* Hostname of the SMTP server used for sending emails.  
+  *Example:*  
+  ```env
+  SMTP_SERVER_HOST_NAME=smtp.example.com
+  ```
+
+- **SMTP_SERVER_PORT**  
+  *Description:* Port used to connect to the SMTP server.  
+  *Default:* `25`  
+  *Example:*  
+  ```env
+  SMTP_SERVER_PORT=587
+  ```
+
+- **SMTP_SERVER_USER_NAME**  
+  *Description:* Username for authenticating with the SMTP server.  
+  *Example:*  
+  ```env
+  SMTP_SERVER_USER_NAME=admin@example.com
+  ```
+
+- **SMTP_SERVER_USER_PASSWORD**  
+  *Description:* Password for authenticating with the SMTP server.  
+  *Example:*  
+  ```env
+  SMTP_SERVER_USER_PASSWORD=securepassword
+  ```
+
+- **ZITADEL_ORGANIZATION_NAME**  
+  *Description:* Name of the default organization to create on first launch.  
+  *Example:*  
+  ```env
+  ZITADEL_ORGANIZATION_NAME=Home
+  ```
+
+- **ZITADEL_USER_EMAIL_ADDRESS**  
+  *Description:* Email address of the initial admin user.  
+  *Example:*  
+  ```env
+  ZITADEL_USER_EMAIL_ADDRESS=admin@example.com
+  ```
+
+- **ZITADEL_USER_FIRST_NAME**  
+  *Description:* First name of the initial admin user.  
+  *Example:*  
+  ```env
+  ZITADEL_USER_FIRST_NAME=John
+  ```
+
+- **ZITADEL_USER_LAST_NAME**  
+  *Description:* Last name of the initial admin user.  
+  *Example:*  
+  ```env
+  ZITADEL_USER_LAST_NAME=Doe
+  ```
+
+- **ZITADEL_USER_NAME**  
+  *Description:* Username for the initial admin user.  
+  *Example:*  
+  ```env
+  ZITADEL_USER_NAME=john.doe@example.com
+  ```
+
+- **ZITADEL_USER_PASSWORD**  
+  *Description:* Password for the initial admin user.  
+  *Example:*  
+  ```env
+  ZITADEL_USER_PASSWORD='securePa$$word'
   ```
 
 ## Usage
