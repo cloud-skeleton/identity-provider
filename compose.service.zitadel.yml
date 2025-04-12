@@ -193,14 +193,14 @@ services:
       - |
           ZITADEL_DATABASE_CREDENTIALS_FILE=/state/secrets/zitadel-database-credentials.yml
           if [ ! -f "$$ZITADEL_DATABASE_CREDENTIALS_FILE" ]; then
-            cat << EOF > "$$ZITADEL_DATABASE_CREDENTIALS_FILE"
-            ---
-            Database:
-              postgres:
-                Admin:
-                  Password: $(< /state/secrets/postgresql-root-user-password.txt)
-            ...
-            EOF
+          cat << EOF > "$$ZITADEL_DATABASE_CREDENTIALS_FILE"
+          ---
+          Database:
+            postgres:
+              Admin:
+                Password: $(< /state/secrets/postgresql-root-user-password.txt)
+          ...
+          EOF
           fi
           ZITADEL_MASTER_KEY_FILE=/state/secrets/zitadel-master-key.txt
           if [ ! -f "$$ZITADEL_MASTER_KEY_FILE" ]; then
