@@ -36,7 +36,6 @@ configs:
           MaxOpenConns: 5
           Port: 5432
           User:
-            Password: ${DATABASE_USER_PASSWORD:?}
             Username: zitadel
             SSL:
               Mode: disable
@@ -174,6 +173,8 @@ services:
         - ready
         - --config
         - /etc/zitadel/zitadel.yml
+        - --config
+        - /state/secrets/zitadel-database-user-password.yml
     image: ghcr.io/zitadel/zitadel:v2.71.3
     labels:
       - traefik.enable=true
@@ -189,9 +190,9 @@ services:
   zitadel_init:
     command:
       - |
-          ZITADEL_DATABASE_CREDENTIALS_FILE=/state/secrets/zitadel-database-credentials.yml
-          if [ ! -f "$$ZITADEL_DATABASE_CREDENTIALS_FILE" ]; then
-          cat << EOF > "$$ZITADEL_DATABASE_CREDENTIALS_FILE"
+          ZITADEL_DATABASE_ADMIN_USER_PASSWORD_FILE=/state/secrets/zitadel-database-admin-user-password.yml
+          if [ ! -f "$$ZITADEL_DATABASE_ADMIN_USER_PASSWORD_FILE" ]; then
+          cat << EOF > "$$ZITADEL_DATABASE_ADMIN_USER_PASSWORD_FILE"
           ---
           Database:
             postgres:
@@ -199,13 +200,31 @@ services:
                 Password: $(< /state/secrets/postgresql-root-user-password.txt)
           ...
           EOF
+          chmod 0400 "$$ZITADEL_DATABASE_ADMIN_USER_PASSWORD_FILE"
+          chown 1000:1000 "$$ZITADEL_DATABASE_ADMIN_USER_PASSWORD_FILE"
+          fi
+          ZITADEL_DATABASE_USER_PASSWORD_FILE=/state/secrets/zitadel-database-user-password.yml
+          if [ ! -f "$$ZITADEL_DATABASE_USER_PASSWORD_FILE" ]; then
+          cat << EOF > "$$ZITADEL_DATABASE_USER_PASSWORD_FILE"
+          ---
+          Database:
+            postgres:
+              User:
+                Password: $(tr -dc A-Za-z0-9 < /dev/urandom | head -c 32)
+          ...
+          EOF
+          chmod 0400 "$$ZITADEL_DATABASE_USER_PASSWORD_FILE"
+          chown 1000:1000 "$$ZITADEL_DATABASE_USER_PASSWORD_FILE"
           fi
           ZITADEL_MASTER_KEY_FILE=/state/secrets/zitadel-master-key.txt
           if [ ! -f "$$ZITADEL_MASTER_KEY_FILE" ]; then
             tr -dc A-Za-z0-9 < /dev/urandom | head -c 32 > "$$ZITADEL_MASTER_KEY_FILE"
             chmod 0400 "$$ZITADEL_MASTER_KEY_FILE"
             chown 1000:1000 "$$ZITADEL_MASTER_KEY_FILE"
-            zitadel init --config /etc/zitadel/zitadel.yml --config "$$ZITADEL_DATABASE_CREDENTIALS_FILE"
+            zitadel init --config /etc/zitadel/zitadel.yml \
+              --config "$$ZITADEL_DATABASE_ADMIN_USER_PASSWORD_FILE" \
+              --config "$$ZITADEL_DATABASE_USER_PASSWORD_FILE" \
+              --config "$$ZITADEL_DATABASE_USER_PASSWORD_FILE"
           fi
     configs:
       - gid: "1000"
@@ -240,6 +259,7 @@ services:
             zitadel setup --init-projections=true \
               --masterkeyFile /state/secrets/zitadel-master-key.txt \
               --config /etc/zitadel/zitadel.yml \
+              --config /state/secrets/zitadel-database-user-password.yml \
               --steps /run/zitadel/setup.yml | \
               tee >(grep --line-buffered -m 1 '"type":"serviceaccount"' > "$$ZITADEL_CLOUD_SKELETON_SECRET_TEMP_FILE")
             if [ -s "$$ZITADEL_CLOUD_SKELETON_SECRET_TEMP_FILE" ]; then
