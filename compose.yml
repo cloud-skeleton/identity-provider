@@ -1,8 +1,6 @@
 ---
 include:
   - compose.service.postgresql.yml
-  - compose.service.zitadel-init.yml
-  - compose.service.zitadel-setup.yml
   - compose.service.zitadel.yml
 
 name: identity_provider

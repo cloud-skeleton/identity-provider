@@ -115,6 +115,36 @@ configs:
         Enabled: false
       ...
 
+  zitadel_setup_config:
+    content: |
+      ---
+      FirstInstance:
+        InstanceName: ${HOST_NAME:?}
+        Org:
+          Name: ${ZITADEL_ORGANIZATION_NAME:?}
+          Human:
+            DisplayName: ${ZITADEL_USER_FIRST_NAME:?} ${ZITADEL_USER_LAST_NAME:?}
+            Email:
+              Address: ${ZITADEL_USER_EMAIL_ADDRESS:?}
+              Verified: true
+            FirstName: ${ZITADEL_USER_FIRST_NAME:?}
+            Gender: ${ZITADEL_USER_GENDER:-}
+            LastName: ${ZITADEL_USER_LAST_NAME:?}
+            NickName: ${ZITADEL_USER_NICK_NAME:-}
+            Password: ${ZITADEL_USER_PASSWORD:?}
+            PasswordChangeRequired: false
+            Phone:
+              Number: ${ZITADEL_USER_PHONE_NUMBER:-}
+              Verified: true
+            UserName: ${ZITADEL_USER_NAME:?}
+          Machine:
+            Machine:
+              Username: cloud.skeleton.iac
+              Name: Cloud Skeleton (IaC)
+            MachineKey:
+              Type: 1
+      ...
+
 services:
   zitadel:
     command: >
@@ -156,4 +186,71 @@ services:
       - proxy_bridge
     volumes:
       - ./state/secrets:/state/secrets
+
+  zitadel_init:
+    command:
+      - |
+          ZITADEL_MASTER_KEY_FILE=/state/secrets/zitadel-master-key.txt
+          if [ ! -f "$$ZITADEL_MASTER_KEY_FILE" ]; then
+            tr -dc A-Za-z0-9 < /dev/urandom | head -c 32 > "$$ZITADEL_MASTER_KEY_FILE"
+            chmod 0400 "$$ZITADEL_MASTER_KEY_FILE"
+            chown 1000:1000 "$$ZITADEL_MASTER_KEY_FILE"
+            zitadel init --config /etc/zitadel/zitadel.yml
+          fi
+    configs:
+      - gid: "1000"
+        mode: 0440
+        source: zitadel_config
+        target: /etc/zitadel/zitadel.yml
+        uid: "1000"
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+    extends:
+      file: compose.templates.yml
+      service: job
+    image: ghcr.io/zitadel/zitadel:v2.71.3-debug
+    networks:
+      - identity_provider
+    volumes:
+      - ./state/secrets:/state/secrets
+
+  zitadel_setup:
+    command:
+      - |
+          ZITADEL_LAST_KNOWN_VERSION_FILE=/state/zitadel/last_known_version
+          ZITADEL_VERSION_CURRENT="$(zitadel -v)"
+          ZITADEL_VERSION_LAST_KNOWN="$(cat "$$ZITADEL_LAST_KNOWN_VERSION_FILE" 2> /dev/null)"
+          if [ "$$ZITADEL_VERSION_LAST_KNOWN" != "$$ZITADEL_VERSION_CURRENT" ]; then
+            ZITADEL_CLOUD_SKELETON_SECRET_TEMP_FILE="$(mktemp)"
+            zitadel setup --init-projections=true \
+              --masterkeyFile /state/secrets/zitadel-master-key.txt \
+              --config /etc/zitadel/zitadel.yml \
+              --steps /run/zitadel/setup.yml | \
+              tee >(grep --line-buffered -m 1 '"type":"serviceaccount"' > "$$ZITADEL_CLOUD_SKELETON_SECRET_TEMP_FILE")
+            if [ -s "$$ZITADEL_CLOUD_SKELETON_SECRET_TEMP_FILE" ]; then
+              ZITADEL_CLOUD_SKELETON_SECRET_FILE=/state/secrets/zitadel-system-user-cloud.skeleton.iac.json
+              mv -f "$$ZITADEL_CLOUD_SKELETON_SECRET_TEMP_FILE" "$$ZITADEL_CLOUD_SKELETON_SECRET_FILE"
+              chmod 0400 "$$ZITADEL_CLOUD_SKELETON_SECRET_FILE"
+              chown 1000:1000 "$$ZITADEL_CLOUD_SKELETON_SECRET_FILE"
+            fi
+            echo "$$ZITADEL_VERSION_CURRENT" > "$$ZITADEL_LAST_KNOWN_VERSION_FILE"
+          fi
+    configs:
+      - gid: "1000"
+        mode: 0440
+        source: zitadel_setup_config
+        target: /run/zitadel/setup.yml
+        uid: "1000"
+    depends_on:
+      zitadel_init:
+        condition: service_completed_successfully
+    extends: zitadel_init
+    volumes:
+      - ./state/secrets:/state/secrets
+      - ./state/zitadel:/state/zitadel
 ...
