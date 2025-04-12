@@ -9,10 +9,6 @@ configs:
       shared_buffers = 16MB
       work_mem = 1MB
 
-secrets:
-  postgresql_root_pasword:
-    environment: DATABASE_ROOT_USER_PASSWORD
-
 services:
   postgresql:
     command: postgres -c config_file=/etc/postgresql/postgresql.conf
@@ -22,8 +18,11 @@ services:
         source: postgresql
         target: /etc/postgresql/postgresql.conf
         uid: "70"
+    depends_on:
+      postgresql_init:
+        condition: service_completed_successfully
     environment:
-      POSTGRES_PASSWORD_FILE: /run/secrets/postgresql_root_pasword
+      POSTGRES_PASSWORD_FILE: /state/secrets/postgresql-root-user-password.txt
     extends:
       file: compose.templates.yml
       service: service
@@ -38,11 +37,29 @@ services:
     image: postgres:17.4-alpine3.21
     networks:
       - identity_provider
-    secrets:
-      - gid: "1000"
-        mode: 0440
-        source: postgresql_root_pasword
-        uid: "1000"
     volumes:
       - ./state/postgresql/data:/var/lib/postgresql/data
+      - ./state/secrets:/state/secrets
+
+  postgresql_init:
+    command:
+      - |
+          POSTGRESQL_ROOT_USER_PASSWORD_FILE=/state/secrets/postgresql-root-user-password.txt
+          if [ ! -f "$$POSTGRESQL_ROOT_USER_PASSWORD_FILE" ]; then
+            tr -dc A-Za-z0-9 < /dev/urandom | head -c 32 > "$$POSTGRESQL_ROOT_USER_PASSWORD_FILE"
+            chmod 0400 "$$POSTGRESQL_ROOT_USER_PASSWORD_FILE"
+            chown 70:70 "$$POSTGRESQL_ROOT_USER_PASSWORD_FILE"
+          fi
+    deploy:
+      resources:
+        limits:
+          memory: 16M
+    extends:
+      file: compose.templates.yml
+      service: job
+    image: postgres:17.4-alpine3.21
+    networks:
+      - identity_provider
+    volumes:
+      - ./state/secrets:/state/secrets
 ...
