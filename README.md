@@ -165,10 +165,10 @@ This repository is designed to be used behind the **[Traefik](https://doc.traefi
 
 ## Contributing
 
-We welcome contributions from the community!  
-- Fork this repository.
-- Create a branch (e.g., `fix/typo` or `feature/add-oidc-support`).
-- Submit a pull request and describe your change.
+Contributions are welcome!  
+- Fork the repository.
+- Create a new branch (e.g., **`feature/my-improvement`**).
+- Submit a pull request with your changes.
 
 ## License
 
@@ -176,4 +176,4 @@ This project is licensed under the [GNU General Public License v3.0](LICENSE).
 
 ---
 
-*This identity provider deployment is maintained by **[Cloud Skeleton](https://github.com/cloud-skeleton/)** and designed to provide a unified authentication solution for EU citizen-led services. 🇪🇺*
+*This repository is maintained exclusively by the **[Cloud Skeleton](https://github.com/cloud-skeleton/)** project, and it was developed by EU citizens who are strong proponents of the European Federation. 🇪🇺*
