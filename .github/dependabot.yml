@@ -1,0 +1,12 @@
+updates:
+  - directory: /
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+    package-ecosystem: docker-compose
+    schedule:
+      interval: daily
+      time: "00:00"
+
+version: 2
