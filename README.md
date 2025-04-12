@@ -19,6 +19,8 @@ It is integrated with:
 - A managed **[PostgreSQL](https://www.postgresql.org/docs/current/index.html)** database.
 - The shared `proxy_bridge` network to allow routing through the **[Container Proxy](https://github.com/cloud-skeleton/container-proxy/)** using **[Traefik](https://doc.traefik.io/traefik/)**.
 
+> **IMPORTANT:** Before deploying the **[Identity Provider](https://github.com/cloud-skeleton/identity-provider/)**, **you must deploy [Container Proxy](https://github.com/cloud-skeleton/container-proxy/) stack**.
+
 ## Deployment Services
 
 This stack deploys two main services defined in `compose.yml`:
@@ -118,34 +120,32 @@ The deployment is configured using environment variables defined in the `.env` f
 
 ## Usage
 
-1. **Create External Network:**  
-   If not already created by **[Container Proxy](https://github.com/cloud-skeleton/container-proxy/)**, set up the shared network:
-
-   ```sh
-   docker network create proxy_bridge
-   ```
-
-2. **Clone the Repository:**
+1. **Clone the Repository:**
 
    ```sh
    git clone https://github.com/cloud-skeleton/identity-provider.git
    cd identity-provider
    ```
 
-3. **Create a `.env` File:**  
-   Populate with necessary variables for **[ZITADEL](https://zitadel.com/docs/guides/start/quickstart)** and **[PostgreSQL](https://www.postgresql.org/docs/current/index.html)**:
+2. **Create a `.env` File:**  
+   Populate it with all necessary variables for **[ZITADEL](https://zitadel.com/docs/guides/start/quickstart)**, **[PostgreSQL](https://www.postgresql.org/docs/current/index.html)**, and SMTP email integration:
 
    ```env
-   ZITADEL_DATABASE_USER=zitadel_user
-   ZITADEL_DATABASE_PASSWORD=secretpassword
-   ZITADEL_DATABASE_HOST=postgres
-   ZITADEL_DATABASE_PORT=5432
-   ZITADEL_DATABASE_NAME=zitadel
-   ZITADEL_EXTERN_URL=https://id.example.com
-   ZITADEL_TLS_ENABLED=false
+   HOST_NAME=identity.example.com
+   ZITADEL_ORGANIZATION_NAME=Home
+   ZITADEL_USER_NAME=john.doe@example.com
+   ZITADEL_USER_PASSWORD='securePa$$word'
+   ZITADEL_USER_EMAIL_ADDRESS=admin@example.com
+   ZITADEL_USER_FIRST_NAME=John
+   ZITADEL_USER_LAST_NAME=Doe
+   SMTP_SERVER_HOST_NAME=smtp.example.com
+   SMTP_SERVER_PORT=587
+   SMTP_SERVER_USER_NAME=admin@example.com
+   SMTP_SERVER_USER_PASSWORD=securepassword
+   SMTP_SERVER_ENABLE_TLS=true
    ```
 
-4. **Deploy with [Docker Compose](https://docs.docker.com/compose/gettingstarted/):**
+3. **Deploy with [Docker Compose](https://docs.docker.com/compose/gettingstarted/):**
 
    ```sh
    docker compose up -d
@@ -153,28 +153,12 @@ The deployment is configured using environment variables defined in the `.env` f
 
 ## Integration with Traefik
 
-This repository is designed to be used behind the **[Traefik](https://doc.traefik.io/traefik/)** reverse proxy managed by the **[Container Proxy](https://github.com/cloud-skeleton/container-proxy/)**.
-
-Labels in the `zitadel` service route requests based on hostname:
-
-```yaml
-labels:
-  - traefik.enable=true
-  - traefik.http.routers.zitadel.rule=Host(`id.example.com`)
-  - traefik.http.routers.zitadel.entrypoints=websecure
-  - traefik.http.routers.zitadel.tls.certresolver=letsencrypt
-```
-
-Ensure DNS points `id.example.com` to the proxy host and that your **[Let's Encrypt](https://letsencrypt.org/getting-started/)** certificates are properly configured via the shared Traefik service.
-
-## Database Initialization
-
-On first startup, the database is initialized automatically via the entrypoint. Persistent storage is mounted at `./volumes/postgresql/`.
+This repository is designed to be used behind the **[Traefik](https://doc.traefik.io/traefik/)** reverse proxy managed by the **[Container Proxy](https://github.com/cloud-skeleton/container-proxy/)**. Ensure DNS points `identity.example.com` to the proxy host.
 
 ## Backup & Persistence
 
-- **Database Volume:**  
-  PostgreSQL data is stored in the local `volumes/postgresql/` directory, which is mounted as a Docker volume.
+- **State Volume:**  
+  Data is stored in the local `./state` directory, which is mounted as a **[Docker](https://docs.docker.com/get-started/)** volume.
 
 - **Environment Config:**  
   Ensure you back up the `.env` file and the entire project directory to restore the service in case of failure.
