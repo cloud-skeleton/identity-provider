@@ -77,6 +77,14 @@ The deployment is configured using environment variables defined in the `.env` f
   SMTP_SERVER_USER_PASSWORD=securepassword
   ```
 
+- **TRAEFIK_PRIVATE_IPV4**  
+  *Description:* Static IPv4 address assigned to the Traefik container within the defined proxy network private subnet.  
+  *Default:* `10.0.0.2`  
+  *Example:*  
+  ```env
+  TRAEFIK_PRIVATE_IPV4=10.0.0.2
+  ```
+
 - **ZITADEL_ORGANIZATION_NAME**  
   *Description:* Name of the default organization to create on first launch.  
   *Example:*  
@@ -133,17 +141,18 @@ The deployment is configured using environment variables defined in the `.env` f
 
    ```env
    HOST_NAME=identity.example.com
-   ZITADEL_ORGANIZATION_NAME=Home
-   ZITADEL_USER_NAME=john.doe@example.com
-   ZITADEL_USER_PASSWORD='securePa$$word'
-   ZITADEL_USER_EMAIL_ADDRESS=admin@example.com
-   ZITADEL_USER_FIRST_NAME=John
-   ZITADEL_USER_LAST_NAME=Doe
+   SMTP_SERVER_ENABLE_TLS=true
    SMTP_SERVER_HOST_NAME=smtp.example.com
    SMTP_SERVER_PORT=587
    SMTP_SERVER_USER_NAME=admin@example.com
    SMTP_SERVER_USER_PASSWORD=securepassword
-   SMTP_SERVER_ENABLE_TLS=true
+   TRAEFIK_PRIVATE_IPV4=10.0.0.2
+   ZITADEL_ORGANIZATION_NAME=Home
+   ZITADEL_USER_EMAIL_ADDRESS=admin@example.com
+   ZITADEL_USER_FIRST_NAME=John
+   ZITADEL_USER_LAST_NAME=Doe
+   ZITADEL_USER_NAME=john.doe@example.com
+   ZITADEL_USER_PASSWORD='securePa$$word'
    ```
 
 3. **Deploy with [Docker Compose](https://docs.docker.com/compose/gettingstarted/):**

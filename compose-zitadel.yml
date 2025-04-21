@@ -166,6 +166,8 @@ services:
     extends:
       file: compose.templates.yml
       service: service
+    extra_hosts:
+      - ${HOST_NAME:?}=${TRAEFIK_PRIVATE_IPV4:-10.0.0.2}
     healthcheck:
       start_period: 40s
       test:
