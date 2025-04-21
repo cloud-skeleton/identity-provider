@@ -2,6 +2,7 @@
 
 [![GPLv3 License](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![SSL Security A+](https://img.shields.io/badge/SSL_Security-A+-green)](https://www.ssllabs.com/ssltest/)
+[![Security.txt ✓](https://img.shields.io/badge/Security.txt-%E2%9C%93-yellow)]()
 [![Max_RAM-384M](https://img.shields.io/badge/Max_RAM-384M-violet)]()
 
 # **[Cloud Skeleton](https://github.com/cloud-skeleton/)** ► **[Identity Provider](https://github.com/cloud-skeleton/identity-provider/)** 🛂
@@ -17,9 +18,9 @@ The **[Identity Provider](https://github.com/cloud-skeleton/identity-provider/)*
 
 It is integrated with:
 - A managed **[PostgreSQL](https://www.postgresql.org/docs/current/index.html)** database.
-- The shared `proxy_bridge` network to allow routing through the **[Container Proxy](https://github.com/cloud-skeleton/container-proxy/)** using **[Traefik](https://doc.traefik.io/traefik/)**.
+- The shared `proxy_bridge` network to allow routing through the **[Proxy](https://github.com/cloud-skeleton/proxy/)** using **[Traefik](https://doc.traefik.io/traefik/)**.
 
-> **IMPORTANT:** Before deploying the **[Identity Provider](https://github.com/cloud-skeleton/identity-provider/)**, **you must deploy [Container Proxy](https://github.com/cloud-skeleton/container-proxy/) stack**.
+> **IMPORTANT:** Before deploying the **[Identity Provider](https://github.com/cloud-skeleton/identity-provider/)**, **you must deploy [Proxy](https://github.com/cloud-skeleton/proxy/) stack**.
 
 ## Deployment Services
 
@@ -153,7 +154,7 @@ The deployment is configured using environment variables defined in the `.env` f
 
 ## Integration with Traefik
 
-This repository is designed to be used behind the **[Traefik](https://doc.traefik.io/traefik/)** reverse proxy managed by the **[Container Proxy](https://github.com/cloud-skeleton/container-proxy/)**. Ensure DNS points `identity.example.com` to the proxy host.
+This repository is designed to be used behind the **[Traefik](https://doc.traefik.io/traefik/)** reverse proxy managed by the **[Proxy](https://github.com/cloud-skeleton/proxy/)**. Ensure DNS points `identity.example.com` to the proxy host.
 
 ## Backup & Persistence
 
