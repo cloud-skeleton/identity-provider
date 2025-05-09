@@ -34,7 +34,7 @@ services:
         - postgres
         - -U
         - postgres
-    image: postgres:17.4-alpine3.21
+    image: postgres:17.5-alpine3.21
     networks:
       - identity_provider
     volumes:
@@ -57,7 +57,7 @@ services:
     extends:
       file: compose.templates.yml
       service: job
-    image: postgres:17.4-alpine3.21
+    image: postgres:17.5-alpine3.21
     networks:
       - identity_provider
     volumes:
