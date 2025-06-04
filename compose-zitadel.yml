@@ -176,7 +176,7 @@ services:
         - ready
         - --config
         - /etc/zitadel/zitadel.yml
-    image: ghcr.io/zitadel/zitadel:v2.71.10
+    image: ghcr.io/zitadel/zitadel:v2.71.12
     labels:
       - traefik.enable=true
       - traefik.http.routers.zitadel.rule=Host("${HOST_NAME:?}")
@@ -242,7 +242,7 @@ services:
     extends:
       file: compose.templates.yml
       service: job
-    image: ghcr.io/zitadel/zitadel:v2.71.10-debug
+    image: ghcr.io/zitadel/zitadel:v2.71.12-debug
     networks:
       - identity_provider
     volumes:
